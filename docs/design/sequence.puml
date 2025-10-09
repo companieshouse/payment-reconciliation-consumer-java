@@ -1,0 +1,41 @@
+@startuml
+actor Kafka
+participant "Service" as S
+participant "Payments API" as API
+participant "DAO (Database)" as DB
+
+Kafka -> S: New message (paymentreconciliation)
+S -> S: Unmarshal message (Avro -> paymentreconciliation)
+alt Unmarshal error
+    S -> S: Log error
+    S -> Kafka: Send to error topic
+else Success
+    S -> API: GetPayment (session details)
+    alt GetPayment error
+        S -> S: Log error
+        S -> Kafka: Send to retry topic
+    else Success
+        S -> S: IsReconcilable?
+        alt Not reconcilable
+            S -> Kafka: Send to error topic
+        else Reconcilable
+            S -> API: GetPaymentDetails
+            alt GetPaymentDetails error
+                S -> S: Log error
+                S -> Kafka: Send to retry topic
+            else Success
+                alt Refund transaction
+                    S -> API: GetLatestRefundStatus
+                    S -> S: handleRefund
+                    S -> DB: Save refund resource
+                else Payment accepted
+                    S -> S: MaskSensitiveFields
+                    note right of S: Masks CompanyNumber and Email
+                    S -> DB: Save Eshu resources
+                    S -> DB: Save transaction resources
+                end
+            end
+        end
+    end
+end
+@enduml
