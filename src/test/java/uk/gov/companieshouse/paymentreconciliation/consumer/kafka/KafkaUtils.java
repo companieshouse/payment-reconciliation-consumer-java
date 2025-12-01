@@ -8,9 +8,9 @@ import java.time.Duration;
 public final class KafkaUtils {
 
     static final String MAIN_TOPIC = "payment-processed";
-    static final String RETRY_TOPIC = "payment-processed-payment-processed-consumer-retry";
-    static final String ERROR_TOPIC = "payment-processed-payment-processed-consumer-error";
-    static final String INVALID_TOPIC = "payment-processed-payment-processed-consumer-invalid";
+    static final String RETRY_TOPIC = "payment-processed-reconciliation-group-retry";
+    static final String ERROR_TOPIC = "payment-processed-reconciliation-group-error";
+    static final String INVALID_TOPIC = "payment-processed-reconciliation-group-invalid";
 
     private KafkaUtils() {
     }
