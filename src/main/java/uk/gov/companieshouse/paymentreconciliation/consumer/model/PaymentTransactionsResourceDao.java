@@ -2,7 +2,7 @@ package uk.gov.companieshouse.paymentreconciliation.consumer.model;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document(collection = "payment_transactions")
+@Document(collection = "payment_transaction")
 public class PaymentTransactionsResourceDao {
 
     private String transactionId;
