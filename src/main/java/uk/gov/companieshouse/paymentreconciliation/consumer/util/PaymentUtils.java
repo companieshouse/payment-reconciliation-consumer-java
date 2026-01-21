@@ -1,6 +1,6 @@
 package uk.gov.companieshouse.paymentreconciliation.consumer.util;
 
-import uk.gov.companieshouse.api.payments.PaymentResponse;
+import uk.gov.companieshouse.api.model.payment.PaymentResponse;
 import uk.gov.companieshouse.paymentreconciliation.consumer.config.ProductCodeLoader;
 
 public class PaymentUtils {

@@ -5,9 +5,11 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.text.DateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,7 +18,8 @@ import org.junit.jupiter.api.Test;
 
 import uk.gov.companieshouse.api.payments.Cost;
 import uk.gov.companieshouse.api.payments.CreatedBy;
-import uk.gov.companieshouse.api.payments.PaymentResponse;
+import uk.gov.companieshouse.api.model.payment.PaymentResponse;
+import uk.gov.companieshouse.api.model.payment.RefundModel;
 import uk.gov.companieshouse.api.payments.Refund;
 import uk.gov.companieshouse.paymentreconciliation.consumer.config.ProductCodeLoader;
 import uk.gov.companieshouse.paymentreconciliation.consumer.model.RefundDao;
@@ -51,10 +54,10 @@ class RefundDaoMapperTest {
         LocalDateTime createdAt = LocalDateTime.of(2024, 6, 1, 12, 0);
         LocalDateTime refundedAt = LocalDateTime.of(2024, 6, 2, 13, 0);
 
-        Refund refund = mock(Refund.class);
+        RefundModel refund = mock(RefundModel.class);
         when(refund.getRefundId()).thenReturn(refundId);
-        when(refund.getCreatedAt()).thenReturn(createdAt.atOffset(ZoneId.systemDefault().getRules().getOffset(createdAt)));
-        when(refund.getRefundedAt()).thenReturn(refundedAt.atOffset(ZoneId.systemDefault().getRules().getOffset(refundedAt)));
+        when(refund.getCreatedAt()).thenReturn(Date.from(createdAt.atZone(ZoneId.of("UTC")).toInstant()));
+        when(refund.getRefundedAt()).thenReturn(Date.from(refundedAt.atZone(ZoneId.of("UTC")).toInstant()));
         when(refund.getAmount()).thenReturn(amount);
         when(refund.getStatus()).thenReturn(status);
 
@@ -76,9 +79,9 @@ class RefundDaoMapperTest {
 
         // Assert
         assertEquals("x" + refundId, result.getTransactionId());
-        assertEquals("2024-06-01", result.getTransactionDate());
+        assertEquals("2024-06-01T12:00:00.000+00:00", result.getTransactionDate());
         assertEquals(refundId, result.getRefundId());
-        assertEquals("2024-06-02", result.getRefundedAt());
+        assertEquals("2024-06-02T13:00:00.000+00:00", result.getRefundedAt());
         assertEquals(paymentId, result.getPaymentId());
         assertEquals(email, result.getEmail());
         assertEquals(paymentMethod, result.getPaymentMethod());
@@ -97,10 +100,10 @@ class RefundDaoMapperTest {
     void mapFromRefund_nullProductType_returnsNullProductCode() {
         // Arrange
         String paymentId = "PAY123";
-        Refund refund = mock(Refund.class);
+        RefundModel refund = mock(RefundModel.class);
         when(refund.getRefundId()).thenReturn("REF456");
-        when(refund.getCreatedAt()).thenReturn(LocalDateTime.now().atOffset(ZoneId.systemDefault().getRules().getOffset(LocalDateTime.now())));
-        when(refund.getRefundedAt()).thenReturn(LocalDateTime.now().atOffset(ZoneId.systemDefault().getRules().getOffset(LocalDateTime.now())));
+        when(refund.getCreatedAt()).thenReturn(Date.from(LocalDateTime.now().atOffset(ZoneId.systemDefault().getRules().getOffset(LocalDateTime.now())).toInstant()));
+        when(refund.getRefundedAt()).thenReturn(Date.from(LocalDateTime.now().atOffset(ZoneId.systemDefault().getRules().getOffset(LocalDateTime.now())).toInstant()));
         when(refund.getAmount()).thenReturn(100);
         when(refund.getStatus()).thenReturn("pending");
 

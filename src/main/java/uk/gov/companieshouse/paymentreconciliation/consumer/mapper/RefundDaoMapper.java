@@ -1,29 +1,30 @@
 package uk.gov.companieshouse.paymentreconciliation.consumer.mapper;
 
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
 import org.springframework.stereotype.Component;
 
-import uk.gov.companieshouse.api.payments.PaymentResponse;
-import uk.gov.companieshouse.api.payments.Refund;
+import uk.gov.companieshouse.api.model.payment.PaymentResponse;
+import uk.gov.companieshouse.api.model.payment.RefundModel;
 import uk.gov.companieshouse.paymentreconciliation.consumer.config.ProductCodeLoader;
 import uk.gov.companieshouse.paymentreconciliation.consumer.model.RefundDao;
 
 @Component
 public class RefundDaoMapper {
     private final ProductCodeLoader productCodeLoader;
-    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
+    private static final DateTimeFormatter FORMATTER  = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSxxx")
+                                       .withZone(ZoneOffset.UTC);
     public RefundDaoMapper(ProductCodeLoader productCodeLoader) {
         this.productCodeLoader = productCodeLoader;
     }
 
-    public RefundDao mapFromRefund(String paymentId, PaymentResponse paymentSession, Refund refund) {
+    public RefundDao mapFromRefund(String paymentId, PaymentResponse paymentSession, RefundModel refund) {
         RefundDao refundDao = new RefundDao();
         refundDao.setTransactionId("x" + refund.getRefundId());
-        refundDao.setTransactionDate(refund.getCreatedAt().format(DATE_TIME_FORMATTER));
+        refundDao.setTransactionDate(FORMATTER.format(refund.getCreatedAt().toInstant()));
         refundDao.setRefundId(refund.getRefundId());
-        refundDao.setRefundedAt(refund.getRefundedAt().format(DATE_TIME_FORMATTER));
+        refundDao.setRefundedAt(FORMATTER.format(refund.getRefundedAt().toInstant()));
         refundDao.setPaymentId(paymentId);
         refundDao.setEmail(paymentSession.getCreatedBy().getEmail());
         refundDao.setPaymentMethod(paymentSession.getPaymentMethod());

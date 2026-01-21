@@ -13,7 +13,8 @@ import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.handler.exception.URIValidationException;
 import uk.gov.companieshouse.api.model.ApiResponse;
 import uk.gov.companieshouse.api.payments.PaymentDetailsResponse;
-import uk.gov.companieshouse.api.payments.PaymentResponse;
+import uk.gov.companieshouse.api.model.payment.PaymentResponse;
+import uk.gov.companieshouse.api.model.payment.RefundModel;
 import uk.gov.companieshouse.api.payments.Refund;
 
 
@@ -63,12 +64,12 @@ public class PaymentsApiClient {
         return null;
     }
 
-    public Refund patchLatestRefundStatus(String paymentId, Refund refund) {
+    public RefundModel patchLatestRefundStatus(String paymentId, RefundModel refund) {
         InternalApiClient client = internalApiClientFactory.get();
         try {
             LOGGER.info("Patching latest refund status for paymentId: %s and refundId: %s".formatted(paymentId, refund.getRefundId()));
             String requestUri = GET_LATEST_REFUND_STATUS_URI.formatted(paymentId, refund.getRefundId());
-            ApiResponse<Refund> response = client.privatePayment().patchLatestRefundStatus(requestUri, refund).execute();
+            ApiResponse<RefundModel> response = client.privatePayment().patchLatestRefundStatus(requestUri, refund).execute();
             return response.getData();
         } catch (ApiErrorResponseException ex) {
             responseHandler.handle(ex);

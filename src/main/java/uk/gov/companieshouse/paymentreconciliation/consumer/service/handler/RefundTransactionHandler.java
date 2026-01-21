@@ -2,14 +2,14 @@ package uk.gov.companieshouse.paymentreconciliation.consumer.service.handler;
 
 import static uk.gov.companieshouse.paymentreconciliation.consumer.Application.NAMESPACE;
 
-import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.logging.LoggerFactory;
 import org.springframework.retry.RetryException;
 import org.springframework.stereotype.Component;
 
 import payments.payment_processed;
-import uk.gov.companieshouse.api.payments.PaymentResponse;
-import uk.gov.companieshouse.api.payments.Refund;
+import uk.gov.companieshouse.api.model.payment.PaymentResponse;
+import uk.gov.companieshouse.api.model.payment.RefundModel;
+import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.paymentreconciliation.consumer.apiclient.PaymentsApiClient;
 import uk.gov.companieshouse.paymentreconciliation.consumer.mapper.RefundDaoMapper;
 import uk.gov.companieshouse.paymentreconciliation.consumer.model.RefundDao;
@@ -37,7 +37,7 @@ public class RefundTransactionHandler implements TransactionHandler<PaymentRespo
     @Override
     public void handle(PaymentResponse paymentSession, payment_processed paymentProcessed) {
 
-        Refund refund = getRefund(paymentSession, paymentProcessed);
+        RefundModel refund = getRefund(paymentSession, paymentProcessed);
         if (refund != null) {
             if (refund.getStatus().equals(STATUS_SUBMITTED) || refund.getStatus().equals(STATUS_REFUND_REQUESTED)) {
                 LOGGER.info("Refund status is submitted. Fetching latest refund status: " + refund);
@@ -59,8 +59,8 @@ public class RefundTransactionHandler implements TransactionHandler<PaymentRespo
         }
     }
 
-    private Refund getRefund(PaymentResponse paymentSession, payments.payment_processed paymentReconciliation) {
-        Refund matchedRefund = null;
+    private RefundModel getRefund(PaymentResponse paymentSession, payments.payment_processed paymentReconciliation) {
+        RefundModel matchedRefund = null;
         if (paymentReconciliation.getRefundId() != null && !paymentReconciliation.getRefundId().isEmpty()) {
             if (paymentSession.getRefunds() == null) {
                 return null;
@@ -76,7 +76,7 @@ public class RefundTransactionHandler implements TransactionHandler<PaymentRespo
         return matchedRefund;
     }
 
-    private void reconcileRefund(String paymentId, PaymentResponse paymentSession, Refund refund) {
+    private void reconcileRefund(String paymentId, PaymentResponse paymentSession, RefundModel refund) {
         RefundDao refundDao = refundDaoMapper.mapFromRefund(paymentId, paymentSession, refund);
         refundRepository.save(refundDao);
     }
