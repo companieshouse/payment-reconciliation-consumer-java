@@ -29,6 +29,10 @@ import uk.gov.companieshouse.api.model.payment.RefundModel;
 import uk.gov.companieshouse.api.payments.PaymentDetailsResponse;
 
 class PaymentsApiClientTest {
+    private static final String PAYMENT_ID_SESSION = "123";
+    private static final String PAYMENT_ID_DETAILS = "456";
+    private static final String PAYMENT_ID_REFUND = "789";
+    private static final String REFUND_ID = "r1";
 
     private Supplier<InternalApiClient> internalApiClientFactory;
     private ResponseHandler responseHandler;
@@ -57,7 +61,7 @@ class PaymentsApiClientTest {
 
     @Test
     void getPaymentSession_returnsPaymentResponse_onSuccess() throws Exception {
-        String paymentId = "123";
+        String paymentId = PAYMENT_ID_SESSION;
         PaymentResponse paymentResponse = new PaymentResponse();
         var paymentGetPaymentSession = mock(PaymentGetPaymentSession.class);
         var apiResponse = mock(ApiResponse.class);
@@ -73,7 +77,7 @@ class PaymentsApiClientTest {
 
     @Test
     void getPaymentSession_handlesApiErrorResponseException() throws Exception {
-        String paymentId = "123";
+        String paymentId = PAYMENT_ID_SESSION;
         var paymentGetPaymentSession = mock(PaymentGetPaymentSession.class);
 
         when(privatePaymentResourceHandler.getPaymentSession("/payments/123")).thenReturn(paymentGetPaymentSession);
@@ -87,7 +91,7 @@ class PaymentsApiClientTest {
 
     @Test
     void getPaymentSession_handlesURIValidationException() throws Exception {
-        String paymentId = "123";
+        String paymentId = PAYMENT_ID_SESSION;
         var paymentGetPaymentSession = mock(PaymentGetPaymentSession.class);
 
         when(privatePaymentResourceHandler.getPaymentSession("/payments/123")).thenReturn(paymentGetPaymentSession);
@@ -100,7 +104,7 @@ class PaymentsApiClientTest {
 
     @Test
     void getPaymentDetails_returnsPaymentDetailsResponse_onSuccess() throws Exception {
-        String paymentId = "456";
+        String paymentId = PAYMENT_ID_DETAILS;
         PaymentDetailsResponse paymentDetailsResponse = new PaymentDetailsResponse();
         var paymentDetailsGet = mock(PaymentGetPaymentDetails.class);
         var apiResponse = mock(ApiResponse.class);
@@ -116,7 +120,7 @@ class PaymentsApiClientTest {
 
     @Test
     void getPaymentDetails_handlesApiErrorResponseException() throws Exception {
-        String paymentId = "456";
+        String paymentId = PAYMENT_ID_DETAILS;
         var paymentGetPaymentDetails = mock(PaymentGetPaymentDetails.class);
 
         when(privatePaymentResourceHandler.getPaymentDetails("/private/payments/456/payment-details")).thenReturn(paymentGetPaymentDetails);
@@ -129,7 +133,7 @@ class PaymentsApiClientTest {
 
     @Test
     void getPaymentDetails_handlesURIValidationException() throws Exception {
-        String paymentId = "456";
+        String paymentId = PAYMENT_ID_DETAILS;
         var paymentGetPaymentDetails = mock(PaymentGetPaymentDetails.class);
 
         when(privatePaymentResourceHandler.getPaymentDetails("/private/payments/456/payment-details")).thenReturn(paymentGetPaymentDetails);
@@ -143,8 +147,8 @@ class PaymentsApiClientTest {
 
     @Test
     void getLatestRefundStatus_returnsRefund_onSuccess() throws Exception {
-        String paymentId = "789";
-        String refundId = "r1";
+        String paymentId = PAYMENT_ID_REFUND;
+        String refundId = REFUND_ID;
         RefundModel refund = new RefundModel();
         refund.setRefundId(refundId);
         var paymentPatchRefundStatus = mock(PaymentPatchRefundStatus.class);
@@ -162,7 +166,7 @@ class PaymentsApiClientTest {
 
     @Test
     void getLatestRefundStatus_handlesApiErrorResponseException() throws Exception {
-        String paymentId = "789";
+        String paymentId = PAYMENT_ID_REFUND;
         RefundModel refund =  new RefundModel();
         refund.setRefundId("r1");
         var paymentPatchRefundStatus = mock(PaymentPatchRefundStatus.class);
@@ -178,7 +182,7 @@ class PaymentsApiClientTest {
 
     @Test
     void getLatestRefundStatus_handlesURIValidationException() throws Exception {
-        String paymentId = "789";
+        String paymentId = PAYMENT_ID_REFUND;
         RefundModel refund =  new RefundModel();
         refund.setRefundId("r1");
         var paymentPatchRefundStatus = mock(PaymentPatchRefundStatus.class);
