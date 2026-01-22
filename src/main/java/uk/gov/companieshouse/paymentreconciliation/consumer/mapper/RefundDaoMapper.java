@@ -13,7 +13,7 @@ import uk.gov.companieshouse.paymentreconciliation.consumer.model.RefundDao;
 @Component
 public class RefundDaoMapper {
     private final ProductCodeLoader productCodeLoader;
-    private static final DateTimeFormatter FORMATTER  = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSxxx")
+    private static final DateTimeFormatter REFUND_DATE_FORMATTER  = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSxxx")
                                        .withZone(ZoneOffset.UTC);
     public RefundDaoMapper(ProductCodeLoader productCodeLoader) {
         this.productCodeLoader = productCodeLoader;
@@ -22,9 +22,9 @@ public class RefundDaoMapper {
     public RefundDao mapFromRefund(String paymentId, PaymentResponse paymentSession, RefundModel refund) {
         RefundDao refundDao = new RefundDao();
         refundDao.setTransactionId("x" + refund.getRefundId());
-        refundDao.setTransactionDate(FORMATTER.format(refund.getCreatedAt().toInstant()));
+        refundDao.setTransactionDate(REFUND_DATE_FORMATTER.format(refund.getCreatedAt().toInstant()));
         refundDao.setRefundId(refund.getRefundId());
-        refundDao.setRefundedAt(FORMATTER.format(refund.getRefundedAt().toInstant()));
+        refundDao.setRefundedAt(REFUND_DATE_FORMATTER.format(refund.getRefundedAt().toInstant()));
         refundDao.setPaymentId(paymentId);
         refundDao.setEmail(paymentSession.getCreatedBy().getEmail());
         refundDao.setPaymentMethod(paymentSession.getPaymentMethod());

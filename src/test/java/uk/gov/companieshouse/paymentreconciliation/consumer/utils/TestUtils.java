@@ -1,25 +1,24 @@
 package uk.gov.companieshouse.paymentreconciliation.consumer.utils;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Date;
+import java.util.List;
+
+import org.jetbrains.annotations.NotNull;
+import org.springframework.http.HttpStatus;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.jetbrains.annotations.NotNull;
-import org.springframework.http.HttpStatus;
 
 import payments.payment_processed;
 import uk.gov.companieshouse.api.model.ApiResponse;
-import uk.gov.companieshouse.api.payments.PaymentDetailsResponse;
 import uk.gov.companieshouse.api.model.payment.PaymentPatchRequestApi;
 import uk.gov.companieshouse.api.model.payment.PaymentResponse;
 import uk.gov.companieshouse.api.model.payment.RefundModel;
-import uk.gov.companieshouse.api.payments.Refund;
-
-import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.Date;
-import java.util.List;
+import uk.gov.companieshouse.api.payments.PaymentDetailsResponse;
 
 public class TestUtils {
 

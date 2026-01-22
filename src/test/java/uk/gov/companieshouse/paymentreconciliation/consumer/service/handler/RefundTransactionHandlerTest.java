@@ -1,9 +1,9 @@
 package uk.gov.companieshouse.paymentreconciliation.consumer.service.handler;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -18,7 +18,6 @@ import org.springframework.retry.RetryException;
 import payments.payment_processed;
 import uk.gov.companieshouse.api.model.payment.PaymentResponse;
 import uk.gov.companieshouse.api.model.payment.RefundModel;
-import uk.gov.companieshouse.api.payments.Refund;
 import uk.gov.companieshouse.paymentreconciliation.consumer.apiclient.PaymentsApiClient;
 import uk.gov.companieshouse.paymentreconciliation.consumer.mapper.RefundDaoMapper;
 import uk.gov.companieshouse.paymentreconciliation.consumer.model.RefundDao;

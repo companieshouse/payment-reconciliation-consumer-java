@@ -24,10 +24,9 @@ import uk.gov.companieshouse.api.handler.payments.request.PaymentGetPaymentDetai
 import uk.gov.companieshouse.api.handler.payments.request.PaymentGetPaymentSession;
 import uk.gov.companieshouse.api.handler.payments.request.PaymentPatchRefundStatus;
 import uk.gov.companieshouse.api.model.ApiResponse;
-import uk.gov.companieshouse.api.payments.PaymentDetailsResponse;
 import uk.gov.companieshouse.api.model.payment.PaymentResponse;
 import uk.gov.companieshouse.api.model.payment.RefundModel;
-import uk.gov.companieshouse.api.payments.Refund;
+import uk.gov.companieshouse.api.payments.PaymentDetailsResponse;
 
 class PaymentsApiClientTest {
 

@@ -4,18 +4,17 @@ import static uk.gov.companieshouse.paymentreconciliation.consumer.Application.N
 
 import java.util.function.Supplier;
 
-import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.logging.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import uk.gov.companieshouse.api.InternalApiClient;
 import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.handler.exception.URIValidationException;
 import uk.gov.companieshouse.api.model.ApiResponse;
-import uk.gov.companieshouse.api.payments.PaymentDetailsResponse;
 import uk.gov.companieshouse.api.model.payment.PaymentResponse;
 import uk.gov.companieshouse.api.model.payment.RefundModel;
-import uk.gov.companieshouse.api.payments.Refund;
+import uk.gov.companieshouse.api.payments.PaymentDetailsResponse;
+import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.logging.LoggerFactory;
 
 
 @Component

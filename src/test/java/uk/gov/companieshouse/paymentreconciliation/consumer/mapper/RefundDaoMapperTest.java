@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.text.DateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Collections;
@@ -16,11 +15,10 @@ import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import uk.gov.companieshouse.api.payments.Cost;
-import uk.gov.companieshouse.api.payments.CreatedBy;
 import uk.gov.companieshouse.api.model.payment.PaymentResponse;
 import uk.gov.companieshouse.api.model.payment.RefundModel;
-import uk.gov.companieshouse.api.payments.Refund;
+import uk.gov.companieshouse.api.payments.Cost;
+import uk.gov.companieshouse.api.payments.CreatedBy;
 import uk.gov.companieshouse.paymentreconciliation.consumer.config.ProductCodeLoader;
 import uk.gov.companieshouse.paymentreconciliation.consumer.model.RefundDao;
 
