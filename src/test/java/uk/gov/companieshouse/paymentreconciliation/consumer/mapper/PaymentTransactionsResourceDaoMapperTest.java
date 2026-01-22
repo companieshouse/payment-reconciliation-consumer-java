@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 
 import uk.gov.companieshouse.api.payments.Cost;
 import uk.gov.companieshouse.api.payments.CreatedBy;
-import uk.gov.companieshouse.api.payments.PaymentResponse;
+import uk.gov.companieshouse.api.model.payment.PaymentResponse;
 import uk.gov.companieshouse.paymentreconciliation.consumer.model.PaymentTransactionsResourceDao;
 
 class PaymentTransactionsResourceDaoMapperTest {

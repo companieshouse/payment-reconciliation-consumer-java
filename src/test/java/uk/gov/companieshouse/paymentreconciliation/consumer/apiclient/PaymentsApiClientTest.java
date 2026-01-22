@@ -24,11 +24,15 @@ import uk.gov.companieshouse.api.handler.payments.request.PaymentGetPaymentDetai
 import uk.gov.companieshouse.api.handler.payments.request.PaymentGetPaymentSession;
 import uk.gov.companieshouse.api.handler.payments.request.PaymentPatchRefundStatus;
 import uk.gov.companieshouse.api.model.ApiResponse;
+import uk.gov.companieshouse.api.model.payment.PaymentResponse;
+import uk.gov.companieshouse.api.model.payment.RefundModel;
 import uk.gov.companieshouse.api.payments.PaymentDetailsResponse;
-import uk.gov.companieshouse.api.payments.PaymentResponse;
-import uk.gov.companieshouse.api.payments.Refund;
 
 class PaymentsApiClientTest {
+    private static final String PAYMENT_ID_SESSION = "123";
+    private static final String PAYMENT_ID_DETAILS = "456";
+    private static final String PAYMENT_ID_REFUND = "789";
+    private static final String REFUND_ID = "r1";
 
     private Supplier<InternalApiClient> internalApiClientFactory;
     private ResponseHandler responseHandler;
@@ -50,14 +54,14 @@ class PaymentsApiClientTest {
                 .thenReturn(mock(PaymentGetPaymentSession.class));
         when(privatePaymentResourceHandler.getPaymentDetails(anyString()))
                 .thenReturn(mock(PaymentGetPaymentDetails.class));
-        when(privatePaymentResourceHandler.patchLatestRefundStatus(anyString(), any(Refund.class)))
+        when(privatePaymentResourceHandler.patchLatestRefundStatus(anyString(), any(RefundModel.class)))
                 .thenReturn(mock(PaymentPatchRefundStatus.class));
         paymentsApiClient = new PaymentsApiClient(internalApiClientFactory, responseHandler);
     }
 
     @Test
     void getPaymentSession_returnsPaymentResponse_onSuccess() throws Exception {
-        String paymentId = "123";
+        String paymentId = PAYMENT_ID_SESSION;
         PaymentResponse paymentResponse = new PaymentResponse();
         var paymentGetPaymentSession = mock(PaymentGetPaymentSession.class);
         var apiResponse = mock(ApiResponse.class);
@@ -73,7 +77,7 @@ class PaymentsApiClientTest {
 
     @Test
     void getPaymentSession_handlesApiErrorResponseException() throws Exception {
-        String paymentId = "123";
+        String paymentId = PAYMENT_ID_SESSION;
         var paymentGetPaymentSession = mock(PaymentGetPaymentSession.class);
 
         when(privatePaymentResourceHandler.getPaymentSession("/payments/123")).thenReturn(paymentGetPaymentSession);
@@ -87,7 +91,7 @@ class PaymentsApiClientTest {
 
     @Test
     void getPaymentSession_handlesURIValidationException() throws Exception {
-        String paymentId = "123";
+        String paymentId = PAYMENT_ID_SESSION;
         var paymentGetPaymentSession = mock(PaymentGetPaymentSession.class);
 
         when(privatePaymentResourceHandler.getPaymentSession("/payments/123")).thenReturn(paymentGetPaymentSession);
@@ -100,7 +104,7 @@ class PaymentsApiClientTest {
 
     @Test
     void getPaymentDetails_returnsPaymentDetailsResponse_onSuccess() throws Exception {
-        String paymentId = "456";
+        String paymentId = PAYMENT_ID_DETAILS;
         PaymentDetailsResponse paymentDetailsResponse = new PaymentDetailsResponse();
         var paymentDetailsGet = mock(PaymentGetPaymentDetails.class);
         var apiResponse = mock(ApiResponse.class);
@@ -116,7 +120,7 @@ class PaymentsApiClientTest {
 
     @Test
     void getPaymentDetails_handlesApiErrorResponseException() throws Exception {
-        String paymentId = "456";
+        String paymentId = PAYMENT_ID_DETAILS;
         var paymentGetPaymentDetails = mock(PaymentGetPaymentDetails.class);
 
         when(privatePaymentResourceHandler.getPaymentDetails("/private/payments/456/payment-details")).thenReturn(paymentGetPaymentDetails);
@@ -129,7 +133,7 @@ class PaymentsApiClientTest {
 
     @Test
     void getPaymentDetails_handlesURIValidationException() throws Exception {
-        String paymentId = "456";
+        String paymentId = PAYMENT_ID_DETAILS;
         var paymentGetPaymentDetails = mock(PaymentGetPaymentDetails.class);
 
         when(privatePaymentResourceHandler.getPaymentDetails("/private/payments/456/payment-details")).thenReturn(paymentGetPaymentDetails);
@@ -143,9 +147,9 @@ class PaymentsApiClientTest {
 
     @Test
     void getLatestRefundStatus_returnsRefund_onSuccess() throws Exception {
-        String paymentId = "789";
-        String refundId = "r1";
-        Refund refund = new Refund();
+        String paymentId = PAYMENT_ID_REFUND;
+        String refundId = REFUND_ID;
+        RefundModel refund = new RefundModel();
         refund.setRefundId(refundId);
         var paymentPatchRefundStatus = mock(PaymentPatchRefundStatus.class);
         var apiResponse = mock(ApiResponse.class);
@@ -155,15 +159,15 @@ class PaymentsApiClientTest {
         when(paymentPatchRefundStatus.execute()).thenReturn(apiResponse);
         when(apiResponse.getData()).thenReturn(refund);
 
-        Refund result = paymentsApiClient.patchLatestRefundStatus(paymentId, refund);
+        RefundModel result = paymentsApiClient.patchLatestRefundStatus(paymentId, refund);
 
         assertSame(refund, result);
     }
 
     @Test
     void getLatestRefundStatus_handlesApiErrorResponseException() throws Exception {
-        String paymentId = "789";
-        Refund refund =  new Refund();
+        String paymentId = PAYMENT_ID_REFUND;
+        RefundModel refund =  new RefundModel();
         refund.setRefundId("r1");
         var paymentPatchRefundStatus = mock(PaymentPatchRefundStatus.class);
 
@@ -171,22 +175,22 @@ class PaymentsApiClientTest {
                 .thenReturn(paymentPatchRefundStatus);
         when(paymentPatchRefundStatus.execute()).thenThrow(ApiErrorResponseException.fromHttpResponseException(new Builder(400, "Bad Request", new HttpHeaders() ).build()));
 
-        Refund result = paymentsApiClient.patchLatestRefundStatus(paymentId, refund);
+        RefundModel result = paymentsApiClient.patchLatestRefundStatus(paymentId, refund);
         assertNull(result);
         verify(responseHandler).handle(any(ApiErrorResponseException.class));
     }
 
     @Test
     void getLatestRefundStatus_handlesURIValidationException() throws Exception {
-        String paymentId = "789";
-        Refund refund =  new Refund();
+        String paymentId = PAYMENT_ID_REFUND;
+        RefundModel refund =  new RefundModel();
         refund.setRefundId("r1");
         var paymentPatchRefundStatus = mock(PaymentPatchRefundStatus.class);
 
         when(privatePaymentResourceHandler.patchLatestRefundStatus("/payments/789/refunds/r1", refund))
                 .thenReturn(paymentPatchRefundStatus);
         when(paymentPatchRefundStatus.execute()).thenThrow(new URIValidationException("invalid uri"));
-        Refund result = paymentsApiClient.patchLatestRefundStatus(paymentId, refund);
+        RefundModel result = paymentsApiClient.patchLatestRefundStatus(paymentId, refund);
 
         assertNull(result);
         verify(responseHandler).handle(any(URIValidationException.class));

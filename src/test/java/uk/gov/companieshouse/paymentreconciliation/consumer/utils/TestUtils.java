@@ -1,21 +1,24 @@
 package uk.gov.companieshouse.paymentreconciliation.consumer.utils;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Date;
+import java.util.List;
+
+import org.jetbrains.annotations.NotNull;
+import org.springframework.http.HttpStatus;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.jetbrains.annotations.NotNull;
-import org.springframework.http.HttpStatus;
 
 import payments.payment_processed;
 import uk.gov.companieshouse.api.model.ApiResponse;
+import uk.gov.companieshouse.api.model.payment.PaymentPatchRequestApi;
+import uk.gov.companieshouse.api.model.payment.PaymentResponse;
+import uk.gov.companieshouse.api.model.payment.RefundModel;
 import uk.gov.companieshouse.api.payments.PaymentDetailsResponse;
-import uk.gov.companieshouse.api.payments.PaymentPatchRequestApi;
-import uk.gov.companieshouse.api.payments.PaymentResponse;
-import uk.gov.companieshouse.api.payments.Refund;
-
-import java.time.OffsetDateTime;
-import java.util.List;
 
 public class TestUtils {
 
@@ -41,7 +44,7 @@ public class TestUtils {
         PaymentResponse paymentResponse = objectMapper.readValue(json, PaymentResponse.class);
 
 
-        Refund refund = new Refund();
+        RefundModel refund = new RefundModel();
         refund.setRefundId("ref1234");
         refund.setStatus("submitted");
         paymentResponse.setRefunds(List.of(refund));
@@ -60,14 +63,14 @@ public class TestUtils {
 
     public static String getLatestRefund() throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
-        Refund refund = new Refund();
+        RefundModel refund = new RefundModel();
         refund.setRefundId("ref1234");
         refund.setStatus("success");
 
-        OffsetDateTime now = OffsetDateTime.now();
-
-        refund.setCreatedAt(now);
-        refund.setRefundedAt(now.plusDays(1));
+        Instant now  = Instant.now();
+        Date nowDate = Date.from(now);
+        refund.setCreatedAt(nowDate);
+        refund.setRefundedAt(Date.from(Instant.now().plus(1, ChronoUnit.DAYS)));
 
         var apiResponse = new ApiResponse<>(HttpStatus.OK.value(), null, refund);
         return objectMapper.writeValueAsString(apiResponse.getData());
@@ -88,7 +91,10 @@ public class TestUtils {
         PaymentPatchRequestApi paymentPatchRequestApi = new PaymentPatchRequestApi();
         paymentPatchRequestApi.setPaymentReference(reference);
         paymentPatchRequestApi.setStatus(status);
-        paymentPatchRequestApi.setPaidAt(OffsetDateTime.parse(paidAt));
+        // Parse the paidAt string to a java.util.Date object
+        java.time.OffsetDateTime odt = java.time.OffsetDateTime.parse(paidAt);
+        java.util.Date paidAtDate = java.util.Date.from(odt.toInstant());
+        paymentPatchRequestApi.setPaidAt(paidAtDate);
         return paymentPatchRequestApi;
     }
 
