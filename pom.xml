@@ -191,6 +191,19 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
+            <exclusions>
+                <!-- CVE-2026-24400 -->
+                <exclusion>
+                    <groupId>org.assertj</groupId>
+                    <artifactId>assertj-core</artifactId>
+                </exclusion>            
+            </exclusions>                
+        </dependency>
+        <!-- CVE-2026-24400 -->
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>3.27.7</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.kafka</groupId>
@@ -211,6 +224,12 @@
                     <groupId>org.bitbucket.b_c</groupId>
                     <artifactId>jose4j</artifactId>
                 </exclusion>
+                <!-- CVE-2025-12183 -->
+                <!-- CVE-2025-66566 -->
+                <exclusion>
+                    <groupId>org.lz4</groupId>
+                    <artifactId>lz4-java</artifactId>
+                </exclusion>                
             </exclusions>
         </dependency>
         <dependency>
