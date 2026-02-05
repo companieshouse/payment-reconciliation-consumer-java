@@ -7,10 +7,10 @@ import java.time.Duration;
 
 public final class KafkaUtils {
 
-    static final String MAIN_TOPIC = "payment-processed";
-    static final String RETRY_TOPIC = "payment-processed-reconciliation-group-retry";
-    static final String ERROR_TOPIC = "payment-processed-reconciliation-group-error";
-    static final String INVALID_TOPIC = "payment-processed-reconciliation-group-invalid";
+    static final String MAIN_TOPIC = "cidev-payment-processed";
+    static final String RETRY_TOPIC = "cidev-payment-processed-payment-reconciliation-consumer-retry";
+    static final String ERROR_TOPIC = "cidev-payment-processed-payment-reconciliation-consumer-error";
+    static final String INVALID_TOPIC = "cidev-payment-processed-payment-reconciliation-consumer-invalid";
 
     private KafkaUtils() {
     }
