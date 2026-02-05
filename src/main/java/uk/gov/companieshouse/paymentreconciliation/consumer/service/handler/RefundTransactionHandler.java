@@ -77,6 +77,7 @@ public class RefundTransactionHandler implements TransactionHandler<PaymentRespo
     }
 
     private void reconcileRefund(String paymentId, PaymentResponse paymentSession, RefundModel refund) {
+        LOGGER.info("Creating refund record for payment id: %s".formatted(paymentId));
         RefundDao refundDao = refundDaoMapper.mapFromRefund(paymentId, paymentSession, refund);
         refundRepository.save(refundDao);
     }

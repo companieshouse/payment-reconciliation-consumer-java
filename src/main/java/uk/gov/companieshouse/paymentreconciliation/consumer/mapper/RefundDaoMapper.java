@@ -28,7 +28,8 @@ public class RefundDaoMapper {
         refundDao.setPaymentId(paymentId);
         refundDao.setEmail(paymentSession.getCreatedBy().getEmail());
         refundDao.setPaymentMethod(paymentSession.getPaymentMethod());
-        refundDao.setAmount(String.valueOf(refund.getAmount()));
+        // Convert pence to pounds and store as string, this is to preserve trailing zeros for amounts like 100.00        
+        refundDao.setAmount(String.valueOf(refund.getAmount() / 100)); 
         refundDao.setCompanyNumber(paymentSession.getCompanyNumber());
         refundDao.setTransactionType("refund");
         refundDao.setOrderReference(paymentSession.getReference());

@@ -36,11 +36,11 @@ public class StandardTransactionHandler implements TransactionHandler<PaymentDet
     @Override
     public void handle(PaymentDetailsResponse paymentDetails, PaymentResponse paymentResponse) {
         String paymentId = paymentResponse.getReference();
-        LOGGER.info("Creating Eshu resources for payment id: %s ".formatted(paymentId));
+        LOGGER.info("Creating Eshu record for payment id: %s ".formatted(paymentId));
         List<EshuDao> eshuResources = eshuMapper.mapFromPaymentResponse(paymentResponse, paymentId, paymentDetails.getTransactionDate());
         eshuRepository.saveAll(eshuResources);
 
-        LOGGER.info("Creating PaymentTransactionsResourceDao resources for payment id: %s".formatted(paymentId));
+        LOGGER.info("Creating PaymentTransaction record for payment id: %s".formatted(paymentId));
         List<PaymentTransactionsResourceDao> paymentTransactionsResources = paymentTransactionsResourceDaoMapper.mapFromPaymentResponse(
                 paymentResponse, paymentId, paymentDetails.getTransactionDate(), paymentDetails.getPaymentStatus());
         transactionRepository.saveAll(paymentTransactionsResources);

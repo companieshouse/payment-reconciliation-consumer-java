@@ -3,6 +3,8 @@
 ## Overview
 The Payment Reconciliation Consumer is designed to process payment-related messages from a Kafka topic. It ensures that payment events are reconciled and stored in the database while adhering to security and business rules. This document provides a detailed design of the service, focusing on its architecture, components, and business logic.
 
+**Note:** All monetary amounts are converted from pence (integer) to pounds (decimal) before being stored or processed, to ensure consistency and clarity in financial records.
+
 ## Requirements
 In order to run the service locally you will need the following:
 - [Java 21](https://www.oracle.com/java/technologies/downloads/#java21)

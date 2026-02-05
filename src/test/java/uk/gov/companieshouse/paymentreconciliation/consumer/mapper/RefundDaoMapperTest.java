@@ -83,7 +83,7 @@ class RefundDaoMapperTest {
         assertEquals(paymentId, result.getPaymentId());
         assertEquals(email, result.getEmail());
         assertEquals(paymentMethod, result.getPaymentMethod());
-        assertEquals(String.valueOf(amount), result.getAmount());
+        assertEquals(String.valueOf(amount / 100), result.getAmount());
         assertEquals(companyNumber, result.getCompanyNumber());
         assertEquals("refund", result.getTransactionType());
         assertEquals(reference, result.getOrderReference());

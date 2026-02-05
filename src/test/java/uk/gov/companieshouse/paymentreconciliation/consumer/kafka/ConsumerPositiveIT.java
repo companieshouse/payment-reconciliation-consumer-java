@@ -9,8 +9,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.verify;
 import static uk.gov.companieshouse.paymentreconciliation.consumer.kafka.KafkaUtils.ERROR_TOPIC;
 import static uk.gov.companieshouse.paymentreconciliation.consumer.kafka.KafkaUtils.INVALID_TOPIC;
 import static uk.gov.companieshouse.paymentreconciliation.consumer.kafka.KafkaUtils.MAIN_TOPIC;
@@ -32,6 +32,7 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
@@ -42,6 +43,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 
 import payments.payment_processed;
+import uk.gov.companieshouse.paymentreconciliation.consumer.model.RefundDao;
 import uk.gov.companieshouse.paymentreconciliation.consumer.repository.EshuRepository;
 import uk.gov.companieshouse.paymentreconciliation.consumer.repository.RefundRepository;
 import uk.gov.companieshouse.paymentreconciliation.consumer.repository.TransactionRepository;
@@ -113,8 +115,8 @@ class ConsumerPositiveIT extends AbstractKafkaIT {
         verify(getRequestedFor(urlEqualTo(GET_URI)));
         verify(getRequestedFor(urlEqualTo("/private"+GET_URI+"/payment-details")));
 
-        org.mockito.Mockito.verify(eshuRepository).saveAll(anyList());
-        org.mockito.Mockito.verify(transactionRepository).saveAll(anyList());
+        verify(eshuRepository).saveAll(anyList());
+        verify(transactionRepository).saveAll(anyList());
     }
 
     @Test
@@ -127,7 +129,6 @@ class ConsumerPositiveIT extends AbstractKafkaIT {
 
         payment_processed refundPayment  = getPaymentProcessed();
         refundPayment.setRefundId("ref1234");
-
         writer.write(refundPayment, encoder);
         stubFor(get(GET_URI)
                 .willReturn(aResponse()
@@ -161,8 +162,9 @@ class ConsumerPositiveIT extends AbstractKafkaIT {
         verify(getRequestedFor(urlEqualTo(GET_URI)));
         verify(getRequestedFor(urlEqualTo("/private"+GET_URI+"/payment-details")));
 
-        org.mockito.Mockito.verify(refundRepository).save(any());
+        ArgumentCaptor<RefundDao> captor = ArgumentCaptor.forClass(RefundDao.class);
+        verify(refundRepository).save(captor.capture());
+        RefundDao savedRefund = captor.getValue();
+        assertThat(savedRefund.getAmount()).isEqualTo("100.00");
     }
-
-
 }
