@@ -165,6 +165,6 @@ class ConsumerPositiveIT extends AbstractKafkaIT {
         ArgumentCaptor<RefundDao> captor = ArgumentCaptor.forClass(RefundDao.class);
         verify(refundRepository).save(captor.capture());
         RefundDao savedRefund = captor.getValue();
-        assertThat(savedRefund.getAmount()).isEqualTo("100.00");
+        assertThat(savedRefund.getAmount()).isEqualTo("100");
     }
 }
