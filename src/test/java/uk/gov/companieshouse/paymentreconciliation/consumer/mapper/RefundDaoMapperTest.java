@@ -38,6 +38,7 @@ class RefundDaoMapperTest {
 
     @Test
     void mapFromRefund_mapsAllFieldsCorrectly() {
+
         // Arrange
         String paymentId = "PAY123";
         String refundId = "REF456";
@@ -47,7 +48,7 @@ class RefundDaoMapperTest {
         String reference = "ORD789";
         String status = "pending";
         String productType = "productTypeA";
-        int amount = 500;
+        int amount = 50000;
 
         LocalDateTime createdAt = LocalDateTime.of(2024, 6, 1, 12, 0);
         LocalDateTime refundedAt = LocalDateTime.of(2024, 6, 2, 13, 0);
@@ -83,7 +84,7 @@ class RefundDaoMapperTest {
         assertEquals(paymentId, result.getPaymentId());
         assertEquals(email, result.getEmail());
         assertEquals(paymentMethod, result.getPaymentMethod());
-        assertEquals(String.valueOf(amount), result.getAmount());
+        assertEquals("500", result.getAmount());
         assertEquals(companyNumber, result.getCompanyNumber());
         assertEquals("refund", result.getTransactionType());
         assertEquals(reference, result.getOrderReference());

@@ -66,7 +66,8 @@ public class TestUtils {
         RefundModel refund = new RefundModel();
         refund.setRefundId("ref1234");
         refund.setStatus("success");
-
+        refund.setAmount(10000);
+        refund.setExternalRefundUrl("https://example.com/refund/ref1234");
         Instant now  = Instant.now();
         Date nowDate = Date.from(now);
         refund.setCreatedAt(nowDate);

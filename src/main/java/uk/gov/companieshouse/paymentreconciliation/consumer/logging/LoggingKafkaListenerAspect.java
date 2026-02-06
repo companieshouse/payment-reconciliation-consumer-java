@@ -27,8 +27,8 @@ import uk.gov.companieshouse.paymentreconciliation.consumer.util.KafkaUtils;
 class LoggingKafkaListenerAspect {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NAMESPACE);
-    private static final String LOG_MESSAGE_RECEIVED = "Processing Refund Request";
-    private static final String LOG_MESSAGE_PROCESSED = "Processed Refund Request";
+    private static final String LOG_MESSAGE_RECEIVED = "Processing `processed-payment` Message";
+    private static final String LOG_MESSAGE_PROCESSED = "Processed `processed-payment` Message";
 
     @Around("@annotation(org.springframework.kafka.annotation.KafkaListener)")
     public Object manageStructuredLogging(ProceedingJoinPoint joinPoint) throws Throwable {
