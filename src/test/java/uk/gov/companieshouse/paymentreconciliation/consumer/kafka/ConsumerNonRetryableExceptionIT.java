@@ -36,7 +36,7 @@ import uk.gov.companieshouse.paymentreconciliation.consumer.exception.NonRetryab
 import uk.gov.companieshouse.paymentreconciliation.consumer.service.PaymentReconciliationServiceRouter;
 import uk.gov.companieshouse.paymentreconciliation.consumer.utils.TestUtils;
 
-@SpringBootTest
+@SpringBootTest()
 class ConsumerNonRetryableExceptionIT extends AbstractKafkaIT {
 
     @Autowired
@@ -57,7 +57,7 @@ class ConsumerNonRetryableExceptionIT extends AbstractKafkaIT {
     }
 
     @BeforeEach
-    public void drainKafkaTopics() {
+    void drainKafkaTopics() {
         if (!kafka.isRunning()) {
             throw new IllegalStateException("Kafka container is not running!");
         }

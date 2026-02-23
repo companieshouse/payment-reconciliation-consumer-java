@@ -41,9 +41,9 @@ class LoggingKafkaListenerAspect {
             retryCount = Optional.ofNullable(headers.get(DEFAULT_HEADER_ATTEMPTS))
                     .map(attempts -> ByteBuffer.wrap((byte[]) attempts).getInt())
                     .orElse(1) - 1;
-            payment_processed paymentreconciliation = KafkaUtils.extractRefundRequest(message.getPayload());
+            payment_processed paymentReconciliation = KafkaUtils.extractRefundRequest(message.getPayload());
 
-            DataMapHolder.initialise(Optional.ofNullable(paymentreconciliation.getPaymentResourceId())
+            DataMapHolder.initialise(Optional.ofNullable(paymentReconciliation.getPaymentResourceId())
                     .orElse(UUID.randomUUID().toString()));
 
             DataMapHolder.get()

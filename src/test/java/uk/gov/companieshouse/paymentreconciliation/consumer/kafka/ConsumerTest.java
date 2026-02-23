@@ -38,7 +38,7 @@ class ConsumerTest {
     @Mock
     private Message<payment_processed> message;
     @Mock
-    private payment_processed paymentreconciliation;
+    private payment_processed paymentReconciliation;
     @Mock
     private MessageHeaders headers;
 
@@ -54,19 +54,19 @@ class ConsumerTest {
 
     @Test
     void consume_shouldRouteMessage_whenNoException() {
-        when(message.getPayload()).thenReturn(paymentreconciliation);
+        when(message.getPayload()).thenReturn(paymentReconciliation);
 
         consumer.consume(message);
 
-        verify(router).route(paymentreconciliation);
+        verify(router).route(paymentReconciliation);
         verify(messageFlags, never()).setRetryable(anyBoolean());
     }
 
     @Test
     void consume_shouldSetRetryableAndThrow_whenRetryableException() {
-        when(message.getPayload()).thenReturn(paymentreconciliation);
+        when(message.getPayload()).thenReturn(paymentReconciliation);
         when(message.getHeaders()).thenReturn(headers);
-        doThrow(new RetryableException("retry", new Throwable())).when(router).route(paymentreconciliation);
+        doThrow(new RetryableException("retry", new Throwable())).when(router).route(paymentReconciliation);
 
         RetryableException thrown = assertThrows(RetryableException.class, () -> consumer.consume(message));
         assertEquals("retry", thrown.getMessage());
@@ -75,11 +75,11 @@ class ConsumerTest {
 
     @Test
     void consume_shouldClearDataMapHolderInFinally() {
-        when(message.getPayload()).thenReturn(paymentreconciliation);
+        when(message.getPayload()).thenReturn(paymentReconciliation);
 
         consumer.consume(message);
-        var h = DataMapHolder.getLogMap();
-        assertEquals("uninitialised",h.get("request_id"));
+        var logMap = DataMapHolder.getLogMap();
+        assertEquals("uninitialised", logMap.get("request_id"));
     }
 
     @Test
@@ -93,18 +93,18 @@ class ConsumerTest {
         headerMap.put("kafka_offset", 10L);
 
         when(message.getHeaders()).thenReturn(new MessageHeaders(headerMap));
-        when(message.getPayload()).thenReturn(paymentreconciliation);
-        when(paymentreconciliation.getPaymentResourceId()).thenReturn(paymentResourceId);
+        when(message.getPayload()).thenReturn(paymentReconciliation);
+        when(paymentReconciliation.getPaymentResourceId()).thenReturn(paymentResourceId);
 
         try (MockedStatic<KafkaUtils> kafkaUtils = Mockito.mockStatic(KafkaUtils.class)) {
             kafkaUtils.when(() -> KafkaUtils.getRetryCount(any())).thenReturn(retryCount);
-            kafkaUtils.when(() -> KafkaUtils.extractRefundRequest(any())).thenReturn(paymentreconciliation);
+            kafkaUtils.when(() -> KafkaUtils.extractRefundRequest(any())).thenReturn(paymentReconciliation);
 
             RetryableException ex = new RetryableException("Retryable exception", new Throwable());
             consumer.consume(message); // Will not throw, so call logIfMaxAttemptsReached directly for coverage
             // logIfMaxAttemptsReached is private, so we can't call it directly.
             // Instead, we simulate the retryable path:
-            doThrow(ex).when(router).route(paymentreconciliation);
+            doThrow(ex).when(router).route(paymentReconciliation);
             assertThrows(RetryableException.class, () -> consumer.consume(message));
         }
     }
@@ -120,15 +120,15 @@ class ConsumerTest {
         headerMap.put("kafka_offset", 10L);
 
         when(message.getHeaders()).thenReturn(new MessageHeaders(headerMap));
-        when(message.getPayload()).thenReturn(paymentreconciliation);
-        when(paymentreconciliation.getPaymentResourceId()).thenReturn(paymentResourceId);
+        when(message.getPayload()).thenReturn(paymentReconciliation);
+        when(paymentReconciliation.getPaymentResourceId()).thenReturn(paymentResourceId);
 
         try (MockedStatic<KafkaUtils> kafkaUtils = Mockito.mockStatic(KafkaUtils.class)) {
             kafkaUtils.when(() -> KafkaUtils.getRetryCount(any())).thenReturn(retryCount);
-            kafkaUtils.when(() -> KafkaUtils.extractRefundRequest(any())).thenReturn(paymentreconciliation);
+            kafkaUtils.when(() -> KafkaUtils.extractRefundRequest(any())).thenReturn(paymentReconciliation);
 
             RetryableException ex = new RetryableException("Retryable exception", new Throwable());
-            doThrow(ex).when(router).route(paymentreconciliation);
+            doThrow(ex).when(router).route(paymentReconciliation);
             assertThrows(RetryableException.class, () -> consumer.consume(message));
         }
     }

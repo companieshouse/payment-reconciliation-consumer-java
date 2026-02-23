@@ -3,7 +3,6 @@ package uk.gov.companieshouse.paymentreconciliation.consumer.mapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
@@ -13,34 +12,43 @@ import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.api.payments.Cost;
 import uk.gov.companieshouse.api.model.payment.PaymentResponse;
 import uk.gov.companieshouse.paymentreconciliation.consumer.config.ProductCodeLoader;
 import uk.gov.companieshouse.paymentreconciliation.consumer.model.EshuDao;
 
+@ExtendWith(MockitoExtension.class)
 class EshuMapperTest {
 
+    @Mock
     private ProductCodeLoader productCodeLoader;
+    @Mock
+    private PaymentResponse paymentResponse;
+    @Mock
+    private Cost cost1;
+    @Mock
+    private Cost cost2;
+
+
     private EshuMapper eshuMapper;
 
     @BeforeEach
     void setUp() {
-        productCodeLoader = mock(ProductCodeLoader.class);
-        Map<String, Integer> productCodes = new HashMap<>();
-        productCodes.put("typeA", 100);
-        productCodes.put("typeB", 200);
-        when(productCodeLoader.getProductCodes()).thenReturn(productCodes);
         eshuMapper = new EshuMapper(productCodeLoader);
     }
 
     @Test
     void mapFromPaymentResponse_mapsSingleCostCorrectly() {
-        PaymentResponse paymentResponse = mock(PaymentResponse.class);
-        Cost cost = mock(Cost.class);
+        Map<String, Integer> productCodes = new HashMap<>();
+        productCodes.put("typeA", 100);
+        productCodes.put("typeB", 200);
+        when(productCodeLoader.getProductCodes()).thenReturn(productCodes);
 
-        when(cost.getProductType()).thenReturn("typeA");
-        when(paymentResponse.getCosts()).thenReturn(List.of(cost));
+        when(cost1.getProductType()).thenReturn("typeA");
+        when(paymentResponse.getCosts()).thenReturn(List.of(cost1));
         when(paymentResponse.getCompanyNumber()).thenReturn("12345678");
 
         String paymentId = "PAYID";
@@ -60,9 +68,10 @@ class EshuMapperTest {
 
     @Test
     void mapFromPaymentResponse_mapsMultipleCostsCorrectly() {
-        PaymentResponse paymentResponse = mock(PaymentResponse.class);
-        Cost cost1 = mock(Cost.class);
-        Cost cost2 = mock(Cost.class);
+        Map<String, Integer> productCodes = new HashMap<>();
+        productCodes.put("typeA", 100);
+        productCodes.put("typeB", 200);
+        when(productCodeLoader.getProductCodes()).thenReturn(productCodes);
 
         when(cost1.getProductType()).thenReturn("typeA");
         when(cost2.getProductType()).thenReturn("typeB");
@@ -91,7 +100,6 @@ class EshuMapperTest {
 
     @Test
     void mapFromPaymentResponse_returnsEmptyListWhenNoCosts() {
-        PaymentResponse paymentResponse = mock(PaymentResponse.class);
         when(paymentResponse.getCosts()).thenReturn(Collections.emptyList());
 
         List<EshuDao> result = eshuMapper.mapFromPaymentResponse(paymentResponse, "ID", "2024-06-03");

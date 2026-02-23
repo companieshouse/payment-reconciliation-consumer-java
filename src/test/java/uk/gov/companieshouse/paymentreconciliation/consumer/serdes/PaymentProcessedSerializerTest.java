@@ -7,21 +7,27 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
 
 import org.apache.avro.io.DatumWriter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import payments.payment_processed;
 import uk.gov.companieshouse.paymentreconciliation.consumer.exception.NonRetryableException;
 
+@ExtendWith(MockitoExtension.class)
 class PaymentProcessedSerializerTest {
 
     private PaymentProcessedSerializer serializer;
+
+    @Mock
+    private DatumWriter<payment_processed> mockDatumWriter;
 
     @BeforeEach
     void setUp() {
@@ -44,10 +50,8 @@ class PaymentProcessedSerializerTest {
         payment_processed data = new payment_processed();
 
         PaymentProcessedSerializer spySerializer = Mockito.spy(serializer);
-        @SuppressWarnings("unchecked")
-        DatumWriter<payment_processed> mockWriter = mock(DatumWriter.class);
-        doReturn(mockWriter).when(spySerializer).getDatumWriter();
-        doThrow(new IOException("Test IO Exception")).when(mockWriter).write(any(), any());
+        doReturn(mockDatumWriter).when(spySerializer).getDatumWriter();
+        doThrow(new IOException("Test IO Exception")).when(mockDatumWriter).write(any(), any());
 
         NonRetryableException ex = assertThrows(
                 NonRetryableException.class,

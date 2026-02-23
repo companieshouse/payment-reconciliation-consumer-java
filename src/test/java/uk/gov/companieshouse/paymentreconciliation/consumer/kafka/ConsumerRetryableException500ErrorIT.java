@@ -38,8 +38,7 @@ import static uk.gov.companieshouse.paymentreconciliation.consumer.utils.TestUti
 @SpringBootTest(properties = {
         "consumer.max-attempts=2",
         "consumer.backoff-delay=50",
-        "payments.api-url=http://localhost:8889",
-})
+        "payments.api-url=http://localhost:8889"})
 @WireMockTest(httpPort = 8889)
 class ConsumerRetryableException500ErrorIT extends AbstractKafkaIT {
 
