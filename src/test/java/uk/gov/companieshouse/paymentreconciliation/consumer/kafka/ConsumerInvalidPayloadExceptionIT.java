@@ -32,7 +32,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import uk.gov.companieshouse.paymentreconciliation.consumer.service.PaymentReconciliationServiceRouter;
 
-@SpringBootTest
+@SpringBootTest()
 class ConsumerInvalidPayloadExceptionIT extends AbstractKafkaIT {
 
     @Autowired
@@ -50,7 +50,7 @@ class ConsumerInvalidPayloadExceptionIT extends AbstractKafkaIT {
     }
 
     @BeforeEach
-    public void setupTopicsAndDrain() throws Exception {
+    void setupTopicsAndDrain() throws Exception {
         // Explicitly create topics before each test
         Properties props = new Properties();
         props.put("bootstrap.servers", kafka.getBootstrapServers());

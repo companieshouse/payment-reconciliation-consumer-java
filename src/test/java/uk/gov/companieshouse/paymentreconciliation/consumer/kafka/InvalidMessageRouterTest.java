@@ -3,7 +3,6 @@ package uk.gov.companieshouse.paymentreconciliation.consumer.kafka;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -11,16 +10,20 @@ import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
-
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.Headers;
 import org.apache.kafka.common.header.internals.RecordHeaders;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+@ExtendWith(MockitoExtension.class)
 class InvalidMessageRouterTest {
 
     private InvalidMessageRouter router;
+    @Mock
     private MessageFlags messageFlags;
     private final String invalidTopic = "invalid-topic";
     private final String originalTopic = "original-topic";
@@ -33,7 +36,6 @@ class InvalidMessageRouterTest {
     @BeforeEach
     void setUp() {
         router = new InvalidMessageRouter();
-        messageFlags = mock(MessageFlags.class);
         Map<String, Object> configs = new HashMap<>();
         configs.put("message-flags", messageFlags);
         configs.put("invalid-topic", invalidTopic);
@@ -95,8 +97,7 @@ class InvalidMessageRouterTest {
     void configure_setsFieldsCorrectly() {
         InvalidMessageRouter newRouter = new InvalidMessageRouter();
         Map<String, Object> configs = new HashMap<>();
-        MessageFlags flags = mock(MessageFlags.class);
-        configs.put("message-flags", flags);
+        configs.put("message-flags", messageFlags);
         configs.put("invalid-topic", "foo");
         newRouter.configure(configs);
 
@@ -104,7 +105,7 @@ class InvalidMessageRouterTest {
         assertDoesNotThrow(() -> {
             var mf = newRouter.getClass().getDeclaredField("messageFlags");
             mf.setAccessible(true);
-            assertSame(flags, mf.get(newRouter));
+            assertSame(messageFlags, mf.get(newRouter));
             var it = newRouter.getClass().getDeclaredField("invalidTopic");
             it.setAccessible(true);
             assertEquals("foo", it.get(newRouter));

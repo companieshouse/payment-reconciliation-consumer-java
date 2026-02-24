@@ -50,8 +50,7 @@ import uk.gov.companieshouse.paymentreconciliation.consumer.repository.Transacti
 import uk.gov.companieshouse.paymentreconciliation.consumer.utils.TestUtils;
 
 @SpringBootTest(properties = {
-        "payments.api-url=http://localhost:8889",
-})
+        "payments.api-url=http://localhost:8889"})
 @WireMockTest(httpPort = 8889)
 class ConsumerPositiveIT extends AbstractKafkaIT {
 

@@ -4,15 +4,18 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.retry.RetryException;
 
 import payments.payment_processed;
@@ -23,34 +26,49 @@ import uk.gov.companieshouse.paymentreconciliation.consumer.mapper.RefundDaoMapp
 import uk.gov.companieshouse.paymentreconciliation.consumer.model.RefundDao;
 import uk.gov.companieshouse.paymentreconciliation.consumer.repository.RefundRepository;
 
+
+@ExtendWith(MockitoExtension.class)
 class RefundTransactionHandlerTest {
 
-    private PaymentsApiClient paymentsApiClient;
-    private RefundRepository refundRepository;
-    private RefundDaoMapper refundDaoMapper;
     private RefundTransactionHandler handler;
+
+    @Mock
+    private PaymentsApiClient paymentsApiClient;
+
+    @Mock
+    private RefundRepository refundRepository;
+
+    @Mock
+    private RefundDaoMapper refundDaoMapper;
+
+    @Mock
+    private PaymentResponse paymentSession;
+
+    @Mock
+    private payment_processed paymentProcessed;
+
+    @Mock
+    private RefundModel refundMock;
+
+    @Mock
+    private RefundDao refundDao;
+
 
     @BeforeEach
     void setUp() {
-        paymentsApiClient = mock(PaymentsApiClient.class);
-        refundRepository = mock(RefundRepository.class);
-        refundDaoMapper = mock(RefundDaoMapper.class);
         handler = new RefundTransactionHandler(paymentsApiClient, refundRepository, refundDaoMapper);
     }
 
     @Test
     void handle_refundStatusSubmitted_patchesAndRetriesIfStillSubmitted() {
-        PaymentResponse paymentSession = mock(PaymentResponse.class);
-        payment_processed paymentProcessed = mock(payment_processed.class);
-        RefundModel refund = new RefundModel();
-        refund.setRefundId("refund123");
-        refund.setStatus("submitted");
         when(paymentProcessed.getRefundId()).thenReturn("refund123");
         when(paymentProcessed.getPaymentResourceId()).thenReturn("paymentId");
-        when(paymentSession.getRefunds()).thenReturn(List.of(refund));
-        RefundModel patchedRefund = mock(RefundModel.class);
-        when(paymentsApiClient.patchLatestRefundStatus(anyString(), any(RefundModel.class))).thenReturn(patchedRefund);
-        when(patchedRefund.getStatus()).thenReturn("submitted");
+        when(paymentSession.getRefunds()).thenReturn(List.of(refundMock));
+        when(refundMock.getRefundId()).thenReturn("refund123");
+        when(refundMock.getStatus()).thenReturn("submitted");
+
+        when(paymentsApiClient.patchLatestRefundStatus(anyString(), any(RefundModel.class))).thenReturn(refundMock);
+        when(refundMock.getStatus()).thenReturn("submitted");
 
         assertThrows(RetryException.class, () -> handler.handle(paymentSession, paymentProcessed));
         verify(paymentsApiClient).patchLatestRefundStatus(anyString(), any(RefundModel.class));
@@ -58,43 +76,50 @@ class RefundTransactionHandlerTest {
 
     @Test
     void handle_refundStatusSubmitted_patchesAndReconcilesIfSuccess() {
-        PaymentResponse paymentSession = mock(PaymentResponse.class);
-        payment_processed paymentProcessed = mock(payment_processed.class);
-        RefundModel refund = mock(RefundModel.class);
-
         when(paymentProcessed.getRefundId()).thenReturn("refund123");
         when(paymentProcessed.getPaymentResourceId()).thenReturn("paymentId");
-        when(paymentSession.getRefunds()).thenReturn(List.of(refund));
-        when(refund.getRefundId()).thenReturn("refund123");
-        when(refund.getStatus()).thenReturn("submitted");
-        RefundModel patchedRefund = mock(RefundModel.class);
-        when(paymentsApiClient.patchLatestRefundStatus(anyString(), any(RefundModel.class))).thenReturn(patchedRefund);
-        when(patchedRefund.getStatus()).thenReturn("success");
+        when(paymentSession.getRefunds()).thenReturn(List.of(refundMock));
+        when(refundMock.getRefundId()).thenReturn("refund123");
 
-        RefundDao refundDao = mock(RefundDao.class);
-        when(refundDaoMapper.mapFromRefund(anyString(), eq(paymentSession), eq(patchedRefund))).thenReturn(refundDao);
+        AtomicInteger callCount = new AtomicInteger(0);
+        when(refundMock.getStatus()).thenAnswer(invocation -> {
+            if (callCount.getAndIncrement() == 0) {
+                return "submitted";
+            } else {
+                return "success";
+            }
+        });
+
+
+        when(paymentsApiClient.patchLatestRefundStatus(anyString(), any(RefundModel.class))).thenReturn(refundMock);
+
+        when(refundDaoMapper.mapFromRefund(anyString(), eq(paymentSession), eq(refundMock))).thenReturn(refundDao);
 
         handler.handle(paymentSession, paymentProcessed);
 
         verify(paymentsApiClient).patchLatestRefundStatus(anyString(), any(RefundModel.class));
-        verify(refundDaoMapper).mapFromRefund("paymentId", paymentSession, patchedRefund);
+        verify(refundDaoMapper).mapFromRefund("paymentId", paymentSession, refundMock);
         verify(refundRepository).save(refundDao);
     }
 
     @Test
     void handle_refundStatusSubmitted_patchesAndSkipsIfFailed() {
-        PaymentResponse paymentSession = mock(PaymentResponse.class);
-        payment_processed paymentProcessed = new payment_processed();
-        paymentProcessed.setRefundId("refund123");
-        paymentProcessed.setPaymentResourceId("paymentId");
-        RefundModel refund = mock(RefundModel.class);
+        when(paymentProcessed.getRefundId()).thenReturn("refund123");
+        when(paymentProcessed.getPaymentResourceId()).thenReturn("paymentId");
 
-        when(paymentSession.getRefunds()).thenReturn(List.of(refund));
-        when(refund.getRefundId()).thenReturn("refund123");
-        when(refund.getStatus()).thenReturn("submitted");
-        RefundModel patchedRefund = mock(RefundModel.class);
-        when(paymentsApiClient.patchLatestRefundStatus(anyString(), any(RefundModel.class))).thenReturn(patchedRefund);
-        when(patchedRefund.getStatus()).thenReturn("failed");
+        when(paymentSession.getRefunds()).thenReturn(List.of(refundMock));
+        when(refundMock.getRefundId()).thenReturn("refund123");
+
+        AtomicInteger callCount = new AtomicInteger(0);
+        when(refundMock.getStatus()).thenAnswer(invocation -> {
+            if (callCount.getAndIncrement() == 0) {
+                return "submitted";
+            } else {
+                return "failed";
+            }
+        });
+
+        when(paymentsApiClient.patchLatestRefundStatus(anyString(), any(RefundModel.class))).thenReturn(refundMock);
 
         handler.handle(paymentSession, paymentProcessed);
 
@@ -105,57 +130,44 @@ class RefundTransactionHandlerTest {
 
     @Test
     void handle_refundStatusSuccess_reconciles() {
-        PaymentResponse paymentSession = mock(PaymentResponse.class);
-        payment_processed paymentProcessed = mock(payment_processed.class);
-        RefundModel refund = mock(RefundModel.class);
         when(paymentProcessed.getRefundId()).thenReturn("refund123");
         when(paymentProcessed.getPaymentResourceId()).thenReturn("paymentId");
-        when(paymentSession.getRefunds()).thenReturn(List.of(refund));
-        when(refund.getRefundId()).thenReturn("refund123");
-        when(refund.getStatus()).thenReturn("success");
+        when(paymentSession.getRefunds()).thenReturn(List.of(refundMock));
+        when(refundMock.getRefundId()).thenReturn("refund123");
+        when(refundMock.getStatus()).thenReturn("success");
 
-        RefundDao refundDao = mock(RefundDao.class);
-        when(refundDaoMapper.mapFromRefund(anyString(), eq(paymentSession), eq(refund))).thenReturn(refundDao);
+        when(refundDaoMapper.mapFromRefund(anyString(), eq(paymentSession), eq(refundMock))).thenReturn(refundDao);
 
         handler.handle(paymentSession, paymentProcessed);
 
-        verify(refundDaoMapper).mapFromRefund("paymentId", paymentSession, refund);
+        verify(refundDaoMapper).mapFromRefund("paymentId", paymentSession, refundMock);
         verify(refundRepository).save(refundDao);
         verifyNoInteractions(paymentsApiClient);
     }
 
     @Test
     void handle_refundStatusRefundSuccess_reconciles() {
-        PaymentResponse paymentSession = mock(PaymentResponse.class);
-        payment_processed paymentProcessed = mock(payment_processed.class);
-        RefundModel refund = mock(RefundModel.class);
-
         when(paymentProcessed.getRefundId()).thenReturn("refund123");
         when(paymentProcessed.getPaymentResourceId()).thenReturn("paymentId");
-        when(paymentSession.getRefunds()).thenReturn(List.of(refund));
-        when(refund.getRefundId()).thenReturn("refund123");
-        when(refund.getStatus()).thenReturn("refund-success");
+        when(paymentSession.getRefunds()).thenReturn(List.of(refundMock));
+        when(refundMock.getRefundId()).thenReturn("refund123");
+        when(refundMock.getStatus()).thenReturn("refund-success");
 
-        RefundDao refundDao = mock(RefundDao.class);
-        when(refundDaoMapper.mapFromRefund(anyString(), eq(paymentSession), eq(refund))).thenReturn(refundDao);
+        when(refundDaoMapper.mapFromRefund(anyString(), eq(paymentSession), eq(refundMock))).thenReturn(refundDao);
 
         handler.handle(paymentSession, paymentProcessed);
 
-        verify(refundDaoMapper).mapFromRefund("paymentId", paymentSession, refund);
+        verify(refundDaoMapper).mapFromRefund("paymentId", paymentSession, refundMock);
         verify(refundRepository).save(refundDao);
         verifyNoInteractions(paymentsApiClient);
     }
 
     @Test
     void handle_refundStatusFailed_skipsReconciliation() {
-        PaymentResponse paymentSession = mock(PaymentResponse.class);
-        payment_processed paymentProcessed = mock(payment_processed.class);
-        RefundModel refund = mock(RefundModel.class);
-
         when(paymentProcessed.getRefundId()).thenReturn("refund123");
-        when(paymentSession.getRefunds()).thenReturn(List.of(refund));
-        when(refund.getRefundId()).thenReturn("refund123");
-        when(refund.getStatus()).thenReturn("failed");
+        when(paymentSession.getRefunds()).thenReturn(List.of(refundMock));
+        when(refundMock.getRefundId()).thenReturn("refund123");
+        when(refundMock.getStatus()).thenReturn("failed");
 
         handler.handle(paymentSession, paymentProcessed);
 
@@ -166,8 +178,6 @@ class RefundTransactionHandlerTest {
 
     @Test
     void handle_refundIsNull_doesNothing() {
-        PaymentResponse paymentSession = mock(PaymentResponse.class);
-        payment_processed paymentProcessed = mock(payment_processed.class);
 
         when(paymentProcessed.getRefundId()).thenReturn("refund123");
         when(paymentSession.getRefunds()).thenReturn(List.of());
@@ -181,9 +191,6 @@ class RefundTransactionHandlerTest {
 
     @Test
     void handle_refundIdIsNull_doesNothing() {
-        PaymentResponse paymentSession = mock(PaymentResponse.class);
-        payment_processed paymentProcessed = mock(payment_processed.class);
-
         when(paymentProcessed.getRefundId()).thenReturn(null);
 
         handler.handle(paymentSession, paymentProcessed);

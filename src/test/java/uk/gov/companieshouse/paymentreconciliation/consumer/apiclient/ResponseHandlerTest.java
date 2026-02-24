@@ -48,7 +48,7 @@ class ResponseHandlerTest {
         when(apiErrorResponseException.getStatusCode()).thenReturn(httpStatusCode);
 
         // when
-        Executable executable = () -> responseHandler.handle(apiErrorResponseException);
+        Executable executable = () -> responseHandler.handle(null, null, apiErrorResponseException);
 
         // then
         assertThrows(RetryableException.class, executable);
@@ -64,7 +64,7 @@ class ResponseHandlerTest {
         when(apiErrorResponseException.getStatusCode()).thenReturn(httpStatusCode);
 
         // when
-        Executable executable = () -> responseHandler.handle(apiErrorResponseException);
+        Executable executable = () -> responseHandler.handle("/blah/","123456",apiErrorResponseException);
 
         // then
         assertThrows(NonRetryableException.class, executable);

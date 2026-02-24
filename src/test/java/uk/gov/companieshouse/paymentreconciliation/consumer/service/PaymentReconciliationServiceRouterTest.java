@@ -1,6 +1,5 @@
 package uk.gov.companieshouse.paymentreconciliation.consumer.service;
 
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -9,55 +8,71 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+import consumer.exception.RetryableErrorException;
 import payments.payment_processed;
+import uk.gov.companieshouse.api.model.payment.PaymentResponse;
 import uk.gov.companieshouse.api.payments.Cost;
 import uk.gov.companieshouse.api.payments.PaymentDetailsResponse;
-import uk.gov.companieshouse.api.model.payment.PaymentResponse;
 import uk.gov.companieshouse.paymentreconciliation.consumer.apiclient.PaymentsApiClient;
 import uk.gov.companieshouse.paymentreconciliation.consumer.config.ProductCodeLoader;
 import uk.gov.companieshouse.paymentreconciliation.consumer.service.handler.RefundTransactionHandler;
 import uk.gov.companieshouse.paymentreconciliation.consumer.service.handler.StandardTransactionHandler;
 
+
+@ExtendWith(MockitoExtension.class)
 class PaymentReconciliationServiceRouterTest {
 
+    @Mock
     private PaymentsApiClient paymentsApiClient;
+
+    @Mock
     private ProductCodeLoader productCodeLoader;
+
+    @Mock
     private StandardTransactionHandler standardTransactionHandler;
+
+    @Mock
     private RefundTransactionHandler refundTransactionHandler;
+
+    @Mock
+    private payment_processed paymentReconciliation;
+
+    @Mock
+    private PaymentDetailsResponse paymentDetails;
+
     private PaymentReconciliationServiceRouter router;
 
     @BeforeEach
     void setUp() {
-        paymentsApiClient = mock(PaymentsApiClient.class);
-        productCodeLoader = mock(ProductCodeLoader.class);
-        standardTransactionHandler = mock(StandardTransactionHandler.class);
-        refundTransactionHandler = mock(RefundTransactionHandler.class);
         router = new PaymentReconciliationServiceRouter(paymentsApiClient, productCodeLoader, standardTransactionHandler, refundTransactionHandler);
     }
 
-    private PaymentResponse buildPaymentResponse(String classOfPayment, String productType) {
-        PaymentResponse paymentResponse = mock(PaymentResponse.class);
-        Cost cost = mock(Cost.class);
+    private Optional<PaymentResponse> buildPaymentResponse(String classOfPayment, String productType) {
+        PaymentResponse paymentResponse = new PaymentResponse();
         List<String> classOfPaymentList = Collections.singletonList(classOfPayment);
-        when(cost.getClassOfPayment()).thenReturn(classOfPaymentList);
-        when(cost.getProductType()).thenReturn(productType);
+        Cost cost = new Cost();
+        cost.setClassOfPayment(classOfPaymentList);
+        cost.setProductType(productType);
         List<Cost> costs = Collections.singletonList(cost);
-        when(paymentResponse.getCosts()).thenReturn(costs);
-        return paymentResponse;
+        paymentResponse.setCosts(costs);
+        return Optional.of(paymentResponse);
     }
 
     @Test
     void route_handlesRefundTransaction_whenReconcilableAndRefund() {
-        payment_processed paymentreconciliation = mock(payment_processed.class);
-        when(paymentreconciliation.getPaymentResourceId()).thenReturn("pid");
-        when(paymentreconciliation.getRefundId()).thenReturn("refundId");
+        when(paymentReconciliation.getPaymentResourceId()).thenReturn("pid");
+        when(paymentReconciliation.getRefundId()).thenReturn("refundId");
 
-        PaymentResponse paymentSession = buildPaymentResponse("data-maintenance", "productA");
-        PaymentDetailsResponse paymentDetails = mock(PaymentDetailsResponse.class);
+        Optional<PaymentResponse> paymentSession = buildPaymentResponse("data-maintenance", "productA");
 
         Map<String, Integer> productCodes = new HashMap<>();
         productCodes.put("productA", 1);
@@ -66,20 +81,18 @@ class PaymentReconciliationServiceRouterTest {
         when(paymentsApiClient.getPaymentDetails("pid")).thenReturn(paymentDetails);
         when(productCodeLoader.getProductCodes()).thenReturn(productCodes);
 
-        router.route(paymentreconciliation);
+        router.route(paymentReconciliation);
 
-        verify(refundTransactionHandler).handle(paymentSession, paymentreconciliation);
+        verify(refundTransactionHandler).handle(paymentSession.get(), paymentReconciliation);
         verifyNoInteractions(standardTransactionHandler);
     }
 
     @Test
     void route_handlesStandardTransaction_whenReconcilableAndAccepted() {
-        payment_processed paymentreconciliation = mock(payment_processed.class);
-        when(paymentreconciliation.getPaymentResourceId()).thenReturn("pid");
-        when(paymentreconciliation.getRefundId()).thenReturn(null);
+        when(paymentReconciliation.getPaymentResourceId()).thenReturn("pid");
+        when(paymentReconciliation.getRefundId()).thenReturn(null);
 
-        PaymentResponse paymentSession = buildPaymentResponse("orderable-item", "productB");
-        PaymentDetailsResponse paymentDetails = mock(PaymentDetailsResponse.class);
+        Optional<PaymentResponse> paymentSession = buildPaymentResponse("orderable-item", "productB");
 
         Map<String, Integer> productCodes = new HashMap<>();
         productCodes.put("productB", 2);
@@ -89,37 +102,31 @@ class PaymentReconciliationServiceRouterTest {
         when(productCodeLoader.getProductCodes()).thenReturn(productCodes);
         when(paymentDetails.getPaymentStatus()).thenReturn("accepted");
 
-        router.route(paymentreconciliation);
+        router.route(paymentReconciliation);
 
-        verify(standardTransactionHandler).handle(paymentDetails, paymentSession);
+        verify(standardTransactionHandler).handle(paymentDetails, paymentSession.get());
         verifyNoInteractions(refundTransactionHandler);
     }
 
     @Test
     void route_doesNothing_whenNotReconcilable() {
-        payment_processed paymentreconciliation = mock(payment_processed.class);
-        when(paymentreconciliation.getPaymentResourceId()).thenReturn("pid");
-        when(paymentreconciliation.getRefundId()).thenReturn(null);
+        when(paymentReconciliation.getPaymentResourceId()).thenReturn("pid");
 
-        PaymentResponse paymentSession = buildPaymentResponse("other-class", "productC");
-        PaymentDetailsResponse paymentDetails = mock(PaymentDetailsResponse.class);
+        Optional<PaymentResponse> paymentSession = buildPaymentResponse("other-class", "productC");
 
         when(paymentsApiClient.getPaymentSession("pid")).thenReturn(paymentSession);
         when(paymentsApiClient.getPaymentDetails("pid")).thenReturn(paymentDetails);
 
-        router.route(paymentreconciliation);
+        router.route(paymentReconciliation);
 
         verifyNoInteractions(standardTransactionHandler, refundTransactionHandler);
     }
 
     @Test
     void route_doesNothing_whenProductTypeNotInProductCodes() {
-        payment_processed paymentreconciliation = mock(payment_processed.class);
-        when(paymentreconciliation.getPaymentResourceId()).thenReturn("pid");
-        when(paymentreconciliation.getRefundId()).thenReturn(null);
+        when(paymentReconciliation.getPaymentResourceId()).thenReturn("pid");
 
-        PaymentResponse paymentSession = buildPaymentResponse("data-maintenance", "unknownProduct");
-        PaymentDetailsResponse paymentDetails = mock(PaymentDetailsResponse.class);
+        Optional<PaymentResponse> paymentSession = buildPaymentResponse("data-maintenance", "unknownProduct");
 
         Map<String, Integer> productCodes = new HashMap<>();
         productCodes.put("productA", 1);
@@ -128,19 +135,16 @@ class PaymentReconciliationServiceRouterTest {
         when(paymentsApiClient.getPaymentDetails("pid")).thenReturn(paymentDetails);
         when(productCodeLoader.getProductCodes()).thenReturn(productCodes);
 
-        router.route(paymentreconciliation);
+        router.route(paymentReconciliation);
 
         verifyNoInteractions(standardTransactionHandler, refundTransactionHandler);
     }
 
     @Test
     void route_doesNothing_whenProductCodeIsZero() {
-        payment_processed paymentreconciliation = mock(payment_processed.class);
-        when(paymentreconciliation.getPaymentResourceId()).thenReturn("pid");
-        when(paymentreconciliation.getRefundId()).thenReturn(null);
+        when(paymentReconciliation.getPaymentResourceId()).thenReturn("pid");
 
-        PaymentResponse paymentSession = buildPaymentResponse("orderable-item", "productZero");
-        PaymentDetailsResponse paymentDetails = mock(PaymentDetailsResponse.class);
+        Optional<PaymentResponse> paymentSession = buildPaymentResponse("orderable-item", "productZero");
 
         Map<String, Integer> productCodes = new HashMap<>();
         productCodes.put("productZero", 0);
@@ -149,19 +153,17 @@ class PaymentReconciliationServiceRouterTest {
         when(paymentsApiClient.getPaymentDetails("pid")).thenReturn(paymentDetails);
         when(productCodeLoader.getProductCodes()).thenReturn(productCodes);
 
-        router.route(paymentreconciliation);
+        router.route(paymentReconciliation);
 
         verifyNoInteractions(standardTransactionHandler, refundTransactionHandler);
     }
 
     @Test
     void route_doesNothing_whenPaymentStatusIsNotAccepted() {
-        payment_processed paymentreconciliation = mock(payment_processed.class);
-        when(paymentreconciliation.getPaymentResourceId()).thenReturn("pid");
-        when(paymentreconciliation.getRefundId()).thenReturn(null);
+        when(paymentReconciliation.getPaymentResourceId()).thenReturn("pid");
+        when(paymentReconciliation.getRefundId()).thenReturn(null);
 
-        PaymentResponse paymentSession = buildPaymentResponse("orderable-item", "productB");
-        PaymentDetailsResponse paymentDetails = mock(PaymentDetailsResponse.class);
+        Optional<PaymentResponse> paymentSession = buildPaymentResponse("orderable-item", "productB");
 
         Map<String, Integer> productCodes = new HashMap<>();
         productCodes.put("productB", 2);
@@ -171,8 +173,113 @@ class PaymentReconciliationServiceRouterTest {
         when(productCodeLoader.getProductCodes()).thenReturn(productCodes);
         when(paymentDetails.getPaymentStatus()).thenReturn("pending");
 
-        router.route(paymentreconciliation);
+        router.route(paymentReconciliation);
 
+        verifyNoInteractions(standardTransactionHandler, refundTransactionHandler);
+    }
+
+    @Test
+    void route_throwsRetryableError_whenPaymentDetailsIsNull() {
+        when(paymentReconciliation.getPaymentResourceId()).thenReturn("pid");
+        Optional<PaymentResponse> paymentSession = buildPaymentResponse("orderable-item", "productA");
+        when(paymentsApiClient.getPaymentSession("pid")).thenReturn(paymentSession);
+        when(paymentsApiClient.getPaymentDetails("pid")).thenReturn(null);
+        try {
+            router.route(paymentReconciliation);
+            Assertions.fail("Expected RetryableErrorException");
+        } catch (Exception e) {
+            Assertions.assertThat(e).isInstanceOf(RetryableErrorException.class);
+        }
+    }
+
+    @Test
+    void route_doesNothing_whenPaymentStatusIsNull() {
+        when(paymentReconciliation.getPaymentResourceId()).thenReturn("pid");
+        Optional<PaymentResponse> paymentSession = buildPaymentResponse("orderable-item", "productA");
+        Map<String, Integer> productCodes = new HashMap<>();
+        productCodes.put("productA", 1);
+        when(paymentsApiClient.getPaymentSession("pid")).thenReturn(paymentSession);
+        when(paymentsApiClient.getPaymentDetails("pid")).thenReturn(paymentDetails);
+        when(productCodeLoader.getProductCodes()).thenReturn(productCodes);
+        when(paymentDetails.getPaymentStatus()).thenReturn(null);
+        router.route(paymentReconciliation);
+        verifyNoInteractions(standardTransactionHandler, refundTransactionHandler);
+    }
+
+    @Test
+    void route_doesNothing_whenPaymentSessionCostsIsNull() {
+        when(paymentReconciliation.getPaymentResourceId()).thenReturn("pid");
+        PaymentResponse paymentResponse = new PaymentResponse();
+        paymentResponse.setCosts(null);
+        when(paymentsApiClient.getPaymentSession("pid")).thenReturn(Optional.of(paymentResponse));
+        when(paymentsApiClient.getPaymentDetails("pid")).thenReturn(paymentDetails);
+        router.route(paymentReconciliation);
+        verifyNoInteractions(standardTransactionHandler, refundTransactionHandler);
+    }
+
+    @Test
+    void route_doesNothing_whenPaymentSessionCostsIsEmpty() {
+        when(paymentReconciliation.getPaymentResourceId()).thenReturn("pid");
+        PaymentResponse paymentResponse = new PaymentResponse();
+        paymentResponse.setCosts(Collections.emptyList());
+        when(paymentsApiClient.getPaymentSession("pid")).thenReturn(Optional.of(paymentResponse));
+        when(paymentsApiClient.getPaymentDetails("pid")).thenReturn(paymentDetails);
+        router.route(paymentReconciliation);
+        verifyNoInteractions(standardTransactionHandler, refundTransactionHandler);
+    }
+
+    @Test
+    void route_doesNothing_whenPaymentSessionCostsFirstIsNull() {
+        when(paymentReconciliation.getPaymentResourceId()).thenReturn("pid");
+        PaymentResponse paymentResponse = new PaymentResponse();
+        paymentResponse.setCosts(Collections.singletonList(null));
+        when(paymentsApiClient.getPaymentSession("pid")).thenReturn(Optional.of(paymentResponse));
+        when(paymentsApiClient.getPaymentDetails("pid")).thenReturn(paymentDetails);
+        router.route(paymentReconciliation);
+        verifyNoInteractions(standardTransactionHandler, refundTransactionHandler);
+    }
+
+    @Test
+    void route_doesNothing_whenClassOfPaymentIsNull() {
+        when(paymentReconciliation.getPaymentResourceId()).thenReturn("pid");
+        Cost cost = new Cost();
+        cost.setClassOfPayment(null);
+        cost.setProductType("productA");
+        PaymentResponse paymentResponse = new PaymentResponse();
+        paymentResponse.setCosts(Collections.singletonList(cost));
+        when(paymentsApiClient.getPaymentSession("pid")).thenReturn(Optional.of(paymentResponse));
+        when(paymentsApiClient.getPaymentDetails("pid")).thenReturn(paymentDetails);
+        when(paymentsApiClient.getPaymentSession("pid")).thenReturn(Optional.of(paymentResponse));
+        when(paymentsApiClient.getPaymentDetails("pid")).thenReturn(paymentDetails);
+        router.route(paymentReconciliation);
+        verifyNoInteractions(standardTransactionHandler, refundTransactionHandler);
+    }
+
+    @Test
+    void route_doesNothing_whenClassOfPaymentIsEmpty() {
+        when(paymentReconciliation.getPaymentResourceId()).thenReturn("pid");
+        Cost cost = new Cost();
+        cost.setClassOfPayment(Collections.emptyList());
+        cost.setProductType("productA");
+        PaymentResponse paymentResponse = new PaymentResponse();
+        paymentResponse.setCosts(Collections.singletonList(cost));
+        when(paymentsApiClient.getPaymentSession("pid")).thenReturn(Optional.of(paymentResponse));
+        when(paymentsApiClient.getPaymentDetails("pid")).thenReturn(paymentDetails);
+        router.route(paymentReconciliation);
+        verifyNoInteractions(standardTransactionHandler, refundTransactionHandler);
+    }
+
+    @Test
+    void route_doesNothing_whenProductTypeIsNull() {
+        when(paymentReconciliation.getPaymentResourceId()).thenReturn("pid");
+        Cost cost = new Cost();
+        cost.setClassOfPayment(Collections.singletonList("classA"));
+        cost.setProductType(null);
+        PaymentResponse paymentResponse = new PaymentResponse();
+        paymentResponse.setCosts(Collections.singletonList(cost));
+        when(paymentsApiClient.getPaymentSession("pid")).thenReturn(Optional.of(paymentResponse));
+        when(paymentsApiClient.getPaymentDetails("pid")).thenReturn(paymentDetails);
+        router.route(paymentReconciliation);
         verifyNoInteractions(standardTransactionHandler, refundTransactionHandler);
     }
 }

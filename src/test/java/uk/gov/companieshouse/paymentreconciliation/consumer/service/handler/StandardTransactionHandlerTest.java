@@ -1,6 +1,5 @@
 package uk.gov.companieshouse.paymentreconciliation.consumer.service.handler;
 
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -10,9 +9,12 @@ import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import uk.gov.companieshouse.api.payments.PaymentDetailsResponse;
 import uk.gov.companieshouse.api.model.payment.PaymentResponse;
+import uk.gov.companieshouse.api.payments.PaymentDetailsResponse;
 import uk.gov.companieshouse.paymentreconciliation.consumer.mapper.EshuMapper;
 import uk.gov.companieshouse.paymentreconciliation.consumer.mapper.PaymentTransactionsResourceDaoMapper;
 import uk.gov.companieshouse.paymentreconciliation.consumer.model.EshuDao;
@@ -21,30 +23,45 @@ import uk.gov.companieshouse.paymentreconciliation.consumer.repository.EshuRepos
 import uk.gov.companieshouse.paymentreconciliation.consumer.repository.TransactionRepository;
 
 
-
+@ExtendWith(MockitoExtension.class)
 class StandardTransactionHandlerTest {
 
+    @Mock
     private EshuRepository eshuRepository;
+
+    @Mock
     private TransactionRepository transactionRepository;
+
+    @Mock
     private EshuMapper eshuMapper;
+
+    @Mock
     private PaymentTransactionsResourceDaoMapper paymentTransactionsResourceDaoMapper;
+
+    @Mock
+    private PaymentDetailsResponse paymentDetails;
+
+    @Mock
+    private PaymentResponse paymentResponse;
+
+    @Mock
+    private EshuDao eshuDao1;
+
+    @Mock
+    private EshuDao eshuDao2;
+
+    @Mock
+    private PaymentTransactionsResourceDao paymentTransactionsResourceDao;
+
     private StandardTransactionHandler handler;
 
     @BeforeEach
     void setUp() {
-        eshuRepository = mock(EshuRepository.class);
-        transactionRepository = mock(TransactionRepository.class);
-        eshuMapper = mock(EshuMapper.class);
-        paymentTransactionsResourceDaoMapper = mock(PaymentTransactionsResourceDaoMapper.class);
         handler = new StandardTransactionHandler(eshuRepository, transactionRepository, eshuMapper, paymentTransactionsResourceDaoMapper);
     }
 
     @Test
     void handle_shouldMapAndSaveEshuAndPaymentTransactionsResources() {
-        // Arrange
-        PaymentDetailsResponse paymentDetails = mock(PaymentDetailsResponse.class);
-        PaymentResponse paymentResponse = mock(PaymentResponse.class);
-
         String paymentId = "PAY123";
         String transactionDate = LocalDateTime.now().toString();
         String paymentStatus = "PAID";
@@ -53,8 +70,8 @@ class StandardTransactionHandlerTest {
         when(paymentDetails.getTransactionDate()).thenReturn(transactionDate);
         when(paymentDetails.getPaymentStatus()).thenReturn(paymentStatus);
 
-        List<EshuDao> eshuList = Arrays.asList(mock(EshuDao.class), mock(EshuDao.class));
-        List<PaymentTransactionsResourceDao> daoList = Arrays.asList(mock(PaymentTransactionsResourceDao.class));
+        List<EshuDao> eshuList = Arrays.asList(eshuDao1, eshuDao2);
+        List<PaymentTransactionsResourceDao> daoList = Arrays.asList(paymentTransactionsResourceDao);
 
         when(eshuMapper.mapFromPaymentResponse(paymentResponse, paymentId, transactionDate)).thenReturn(eshuList);
         when(paymentTransactionsResourceDaoMapper.mapFromPaymentResponse(paymentResponse, paymentId, transactionDate, paymentStatus)).thenReturn(daoList);
@@ -72,9 +89,6 @@ class StandardTransactionHandlerTest {
 
     @Test
     void handle_shouldHandleEmptyListsGracefully() {
-        PaymentDetailsResponse paymentDetails = mock(PaymentDetailsResponse.class);
-        PaymentResponse paymentResponse = mock(PaymentResponse.class);
-
         String paymentId = "PAY456";
         String transactionDate = LocalDateTime.now().toString();
         String paymentStatus = "FAILED";

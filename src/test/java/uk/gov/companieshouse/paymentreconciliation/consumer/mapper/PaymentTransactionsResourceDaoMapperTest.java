@@ -2,29 +2,38 @@ package uk.gov.companieshouse.paymentreconciliation.consumer.mapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+import uk.gov.companieshouse.api.model.payment.PaymentResponse;
 import uk.gov.companieshouse.api.payments.Cost;
 import uk.gov.companieshouse.api.payments.CreatedBy;
-import uk.gov.companieshouse.api.model.payment.PaymentResponse;
+import uk.gov.companieshouse.paymentreconciliation.consumer.config.ProductCodeLoader;
 import uk.gov.companieshouse.paymentreconciliation.consumer.model.PaymentTransactionsResourceDao;
 
+@ExtendWith(MockitoExtension.class)
 class PaymentTransactionsResourceDaoMapperTest {
+
+    @Mock
+    private ProductCodeLoader productCodeLoader;
+    @Mock
+    private PaymentResponse paymentResponse;
+    @Mock
+    private Cost cost1;
+    @Mock
+    private Cost cost2;
+    @Mock
+    private CreatedBy createdBy;
 
     @Test
     void mapFromPaymentResponse_shouldMapAllFieldsCorrectly() {
-        // Arrange
-        PaymentResponse paymentResponse = mock(PaymentResponse.class);
-        CreatedBy createdBy = mock(CreatedBy.class);
-        Cost cost1 = mock(Cost.class);
-        Cost cost2 = mock(Cost.class);
-
         when(paymentResponse.getCosts()).thenReturn(List.of(cost1, cost2));
         when(paymentResponse.getCreatedBy()).thenReturn(createdBy);
         when(createdBy.getEmail()).thenReturn("test@example.com");
@@ -67,7 +76,6 @@ class PaymentTransactionsResourceDaoMapperTest {
 
     @Test
     void mapFromPaymentResponse_shouldReturnEmptyListWhenNoCosts() {
-        PaymentResponse paymentResponse = mock(PaymentResponse.class);
         when(paymentResponse.getCosts()).thenReturn(new ArrayList<>());
 
         PaymentTransactionsResourceDaoMapper mapper = new PaymentTransactionsResourceDaoMapper();
