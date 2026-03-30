@@ -12,11 +12,11 @@ import uk.gov.companieshouse.paymentreconciliation.consumer.model.RefundDao;
 
 @Component
 public class RefundDaoMapper {
-    
+
     private final ProductCodeLoader productCodeLoader;
-    
+
     private static final int PENCE_IN_POUND = 100;
-    
+
     private static final DateTimeFormatter REFUND_DATE_FORMATTER  = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSxxx")
                                        .withZone(ZoneOffset.UTC);
     public RefundDaoMapper(ProductCodeLoader productCodeLoader) {
@@ -28,14 +28,14 @@ public class RefundDaoMapper {
     public RefundDao mapFromRefund(String paymentId, PaymentResponse paymentSession, RefundModel refund) {
         RefundDao refundDao = new RefundDao();
         refundDao.setTransactionId("x" + refund.getRefundId());
-        refundDao.setTransactionDate(REFUND_DATE_FORMATTER.format(refund.getCreatedAt().toInstant()));
+        refundDao.setTransactionDate(REFUND_DATE_FORMATTER.format(refund.getCreatedAt()));
         refundDao.setRefundId(refund.getRefundId());
-        refundDao.setRefundedAt(REFUND_DATE_FORMATTER.format(refund.getRefundedAt().toInstant()));
+        refundDao.setRefundedAt(REFUND_DATE_FORMATTER.format(refund.getRefundedAt()));
         refundDao.setPaymentId(paymentId);
         refundDao.setEmail(paymentSession.getCreatedBy().getEmail());
         refundDao.setPaymentMethod(paymentSession.getPaymentMethod());
-        // Convert pence to pounds and store as string, this is to preserve trailing zeros for amounts like 100.00        
-        refundDao.setAmount(String.valueOf(refund.getAmount() / PENCE_IN_POUND)); 
+        // Convert pence to pounds and store as string, this is to preserve trailing zeros for amounts like 100.00
+        refundDao.setAmount(String.valueOf(refund.getAmount() / PENCE_IN_POUND));
         refundDao.setCompanyNumber(paymentSession.getCompanyNumber());
         refundDao.setTransactionType("refund");
         refundDao.setOrderReference(paymentSession.getReference());

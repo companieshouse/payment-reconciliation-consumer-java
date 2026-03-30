@@ -1,8 +1,8 @@
 package uk.gov.companieshouse.paymentreconciliation.consumer.utils;
 
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
 import java.util.List;
 
 import org.jetbrains.annotations.NotNull;
@@ -69,9 +69,8 @@ public class TestUtils {
         refund.setAmount(10000);
         refund.setExternalRefundUrl("https://example.com/refund/ref1234");
         Instant now  = Instant.now();
-        Date nowDate = Date.from(now);
-        refund.setCreatedAt(nowDate);
-        refund.setRefundedAt(Date.from(Instant.now().plus(1, ChronoUnit.DAYS)));
+        refund.setCreatedAt(now);
+        refund.setRefundedAt(Instant.now().plus(1, ChronoUnit.DAYS));
 
         var apiResponse = new ApiResponse<>(HttpStatus.OK.value(), null, refund);
         return objectMapper.writeValueAsString(apiResponse.getData());
@@ -92,10 +91,10 @@ public class TestUtils {
         PaymentPatchRequestApi paymentPatchRequestApi = new PaymentPatchRequestApi();
         paymentPatchRequestApi.setPaymentReference(reference);
         paymentPatchRequestApi.setStatus(status);
-        // Parse the paidAt string to a java.util.Date object
-        java.time.OffsetDateTime odt = java.time.OffsetDateTime.parse(paidAt);
-        java.util.Date paidAtDate = java.util.Date.from(odt.toInstant());
-        paymentPatchRequestApi.setPaidAt(paidAtDate);
+        // Parse the paidAt string to a java.time.Instant object
+        OffsetDateTime odt = OffsetDateTime.parse(paidAt);
+        Instant paidAtInstant = odt.toInstant();
+        paymentPatchRequestApi.setPaidAt(paidAtInstant);
         return paymentPatchRequestApi;
     }
 
