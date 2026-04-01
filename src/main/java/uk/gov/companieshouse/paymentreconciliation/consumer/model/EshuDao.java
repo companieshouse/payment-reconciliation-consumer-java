@@ -2,25 +2,40 @@ package uk.gov.companieshouse.paymentreconciliation.consumer.model;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import org.springframework.data.mongodb.core.mapping.Field;
+
 @Document(collection = "eshu")
 public class EshuDao {
-    String paymentRef;
-    int productCode;
+
+    @Field("payment_reference")
+    String paymentReference;
+
+    @Field("product_code")
+    Integer productCode;
+
+    @Field("company_number")
     String companyNumber;
+
+    @Field("filing_date")
     String filingDate;
-    String madeUpdate;
+
+    @Field("made_up_date")
+    String madeUpDate;
+
+    @Field("transaction_date")
     String transactionDate;
 
-    public String getPaymentRef() {
-        return paymentRef;
+
+    public String getPaymentReference() {
+        return paymentReference;
     }
-    public void setPaymentRef(String paymentRef) {
-        this.paymentRef = paymentRef;
+    public void setPaymentReference(String paymentReference) {
+        this.paymentReference = paymentReference;
     }
-    public int getProductCode() {
+    public Integer getProductCode() {
         return productCode;
     }
-    public void setProductCode(int productCode) {
+    public void setProductCode(Integer productCode) {
         this.productCode = productCode;
     }
     public String getCompanyNumber() {
@@ -35,11 +50,11 @@ public class EshuDao {
     public void setFilingDate(String filingDate) {
         this.filingDate = filingDate;
     }
-    public String getMadeUpdate() {
-        return madeUpdate;
+    public String getMadeUpDate() {
+        return madeUpDate;
     }
-    public void setMadeUpdate(String madeUpdate) {
-        this.madeUpdate = madeUpdate;
+    public void setMadeUpDate(String madeUpDate) {
+        this.madeUpDate = madeUpDate;
     }
     public String getTransactionDate() {
         return transactionDate;

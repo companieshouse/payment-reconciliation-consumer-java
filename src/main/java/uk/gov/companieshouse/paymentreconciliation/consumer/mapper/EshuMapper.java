@@ -20,11 +20,11 @@ public class EshuMapper {
             String productType = cost.getProductType();
             int productCode = productCodeLoader.getProductCodes().get(productType);
             EshuDao eshu = new EshuDao();
-            eshu.setPaymentRef("X" + paymentId);
+            eshu.setPaymentReference("X" + paymentId);
             eshu.setProductCode(productCode);
             eshu.setCompanyNumber(paymentResponse.getCompanyNumber());
             eshu.setFilingDate("");
-            eshu.setMadeUpdate("");
+            eshu.setMadeUpDate("");
             eshu.setTransactionDate(transactionDate);
             eshuResources.add(eshu);
         }

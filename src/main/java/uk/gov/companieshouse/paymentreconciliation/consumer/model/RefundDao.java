@@ -1,25 +1,59 @@
 package uk.gov.companieshouse.paymentreconciliation.consumer.model;
 
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Document(collection = "refunds")
 public class RefundDao {
 
+    @Field("transaction_id")
     String transactionId;
+
+    @Field("transaction_date")
     String transactionDate;
+
+    @Field("email")
     String email;
+
+    @Field("payment_method")
     String paymentMethod;
+
+    @Field("amount")
     String amount;
+
+    @Field  ("company_number")
     String companyNumber;
+
+    @Field("transaction_type")
     String transactionType;
+
+    @Field("order_reference")
     String orderReference;
+
+    @Field("status")
     String status;
+
+    @Field("user_id")
     String userId;
+
+    @Field("original_reference")
     String originalReference;
+
+    @Field("dispute_details")
     String disputeDetails;
+
+    @Field("product_code")
     Integer productCode;
+
+    @Field("payment_id")
     String paymentId;
+
+    @Field("refund_id")
     String refundId;
+
+    @Field("refunded_at")
     String refundedAt;
 
     public String getTransactionId() {

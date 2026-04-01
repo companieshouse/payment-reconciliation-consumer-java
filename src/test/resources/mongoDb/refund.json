@@ -1,0 +1,18 @@
+{
+  "transaction_id": "xref1234",
+  "transaction_date": "2026-04-01T06:44:32.354+00:00",
+  "email": "jnash@companieshouse.gov.uk",
+  "payment_method": "credit-card",
+  "amount": "100",
+  "company_number": "12345678",
+  "transaction_type": "refund",
+  "order_reference": "OverseasEntitiesReference_157786-924916-686703",
+  "status": "success",
+  "user_id": "system",
+  "original_reference": "XP9hl8PrKRBk1Zmc",
+  "dispute_details": "",
+  "product_code": 16300,
+  "payment_id": "P9hl8PrKRBk1Zmc",
+  "refund_id": "ref1234",
+  "refunded_at": "2026-04-02T06:44:32.354+00:00"
+}

@@ -58,11 +58,11 @@ class EshuMapperTest {
 
         assertEquals(1, result.size());
         EshuDao eshu = result.get(0);
-        assertEquals("X" + paymentId, eshu.getPaymentRef());
+        assertEquals("X" + paymentId, eshu.getPaymentReference());
         assertEquals(100, eshu.getProductCode());
         assertEquals("12345678", eshu.getCompanyNumber());
         assertEquals("", eshu.getFilingDate());
-        assertEquals("", eshu.getMadeUpdate());
+        assertEquals("", eshu.getMadeUpDate());
         assertEquals(transactionDate, eshu.getTransactionDate());
     }
 
@@ -86,13 +86,13 @@ class EshuMapperTest {
         assertEquals(2, result.size());
 
         EshuDao eshu1 = result.get(0);
-        assertEquals("X" + paymentId, eshu1.getPaymentRef());
+        assertEquals("X" + paymentId, eshu1.getPaymentReference());
         assertEquals(100, eshu1.getProductCode());
         assertEquals("87654321", eshu1.getCompanyNumber());
         assertEquals(transactionDate, eshu1.getTransactionDate());
 
         EshuDao eshu2 = result.get(1);
-        assertEquals("X" + paymentId, eshu2.getPaymentRef());
+        assertEquals("X" + paymentId, eshu2.getPaymentReference());
         assertEquals(200, eshu2.getProductCode());
         assertEquals("87654321", eshu2.getCompanyNumber());
         assertEquals(transactionDate, eshu2.getTransactionDate());
