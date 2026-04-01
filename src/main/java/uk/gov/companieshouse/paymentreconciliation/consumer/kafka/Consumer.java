@@ -22,7 +22,6 @@ import uk.gov.companieshouse.paymentreconciliation.consumer.logging.DataMapHolde
 import uk.gov.companieshouse.paymentreconciliation.consumer.service.PaymentReconciliationServiceRouter;
 import uk.gov.companieshouse.paymentreconciliation.consumer.util.KafkaUtils;
 
-
 @Component
 public class Consumer {
 
