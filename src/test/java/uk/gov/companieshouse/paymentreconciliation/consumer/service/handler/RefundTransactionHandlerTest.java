@@ -16,12 +16,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.retry.RetryException;
 
 import payments.payment_processed;
 import uk.gov.companieshouse.api.model.payment.PaymentResponse;
 import uk.gov.companieshouse.api.model.payment.RefundModel;
 import uk.gov.companieshouse.paymentreconciliation.consumer.apiclient.PaymentsApiClient;
+import uk.gov.companieshouse.paymentreconciliation.consumer.exception.RetryableException;
 import uk.gov.companieshouse.paymentreconciliation.consumer.mapper.RefundDaoMapper;
 import uk.gov.companieshouse.paymentreconciliation.consumer.model.RefundDao;
 import uk.gov.companieshouse.paymentreconciliation.consumer.repository.RefundRepository;
@@ -70,7 +70,7 @@ class RefundTransactionHandlerTest {
         when(paymentsApiClient.patchLatestRefundStatus(anyString(), any(RefundModel.class))).thenReturn(refundMock);
         when(refundMock.getStatus()).thenReturn("submitted");
 
-        assertThrows(RetryException.class, () -> handler.handle(paymentSession, paymentProcessed));
+        assertThrows(RetryableException.class, () -> handler.handle(paymentSession, paymentProcessed));
         verify(paymentsApiClient).patchLatestRefundStatus(anyString(), any(RefundModel.class));
     }
 

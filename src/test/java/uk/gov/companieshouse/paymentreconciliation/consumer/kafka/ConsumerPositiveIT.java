@@ -40,6 +40,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 
 import payments.payment_processed;
+import uk.gov.companieshouse.paymentreconciliation.consumer.config.ProductCodeLoader;
 import uk.gov.companieshouse.paymentreconciliation.consumer.model.EshuDao;
 import uk.gov.companieshouse.paymentreconciliation.consumer.model.PaymentTransactionsResourceDao;
 import uk.gov.companieshouse.paymentreconciliation.consumer.model.RefundDao;
@@ -73,6 +74,9 @@ class ConsumerPositiveIT extends AbstractKafkaIT {
     @Autowired
     private MongoTemplate mongoTemplate;
 
+    @Autowired
+    private ProductCodeLoader productCodeLoader;
+
     @Container
     private static final MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0.13");
 
@@ -83,13 +87,17 @@ class ConsumerPositiveIT extends AbstractKafkaIT {
     @DynamicPropertySource
     static void props(DynamicPropertyRegistry registry) {
         registry.add("steps", () -> 1);
-        registry.add("spring.data.mongodb.uri", mongoDBContainer::getReplicaSetUrl);
+        registry.add("spring.mongodb.uri", () -> mongoDBContainer.getReplicaSetUrl("payment_reconciliation") );
+        registry.add("spring.mongodb.database", () -> "payment_reconciliation");
     }
 
     @BeforeEach
     void setup() {
         testConsumerAspect.resetLatch();
         testConsumer.poll(Duration.ofMillis(1000));
+        mongoTemplate.createCollection(ESHU_COLLECTION);
+        mongoTemplate.createCollection(TRANSACTION_COLLECTION);
+        mongoTemplate.createCollection(REFUND_COLLECTION);
     }
 
     @AfterEach
@@ -135,7 +143,7 @@ class ConsumerPositiveIT extends AbstractKafkaIT {
 
         // Act
         sendMessageToKafka(MAIN_TOPIC, message);
-        awaitLatchOrFail(20);
+        awaitLatchOrFail(5);
 
         // Assert
         RefundDao refundDocumentFromMongo = refundRepository.findAll().getFirst();
