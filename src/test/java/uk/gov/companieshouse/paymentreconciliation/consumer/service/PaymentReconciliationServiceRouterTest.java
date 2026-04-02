@@ -282,4 +282,50 @@ class PaymentReconciliationServiceRouterTest {
         router.route(paymentReconciliation);
         verifyNoInteractions(standardTransactionHandler, refundTransactionHandler);
     }
+
+    @Test
+    void route_doesNothing_whenPaymentSessionOptionalIsEmpty() {
+        when(paymentReconciliation.getPaymentResourceId()).thenReturn("pid");
+        when(paymentsApiClient.getPaymentSession("pid")).thenReturn(Optional.empty());
+        router.route(paymentReconciliation);
+        verifyNoInteractions(standardTransactionHandler, refundTransactionHandler);
+    }
+
+    @Test
+    void route_doesNothing_whenPaymentResourceIdIsNull() {
+        when(paymentReconciliation.getPaymentResourceId()).thenReturn(null);
+        when(paymentsApiClient.getPaymentSession(null)).thenReturn(Optional.empty());
+        router.route(paymentReconciliation);
+        verifyNoInteractions(standardTransactionHandler, refundTransactionHandler);
+    }
+
+    @Test
+    void route_handlesStandardTransaction_whenRefundIdIsEmptyString() {
+        when(paymentReconciliation.getPaymentResourceId()).thenReturn("pid");
+        when(paymentReconciliation.getRefundId()).thenReturn("");
+        Optional<PaymentResponse> paymentSession = buildPaymentResponse("orderable-item", "productB");
+        Map<String, Integer> productCodes = new HashMap<>();
+        productCodes.put("productB", 2);
+        when(paymentsApiClient.getPaymentSession("pid")).thenReturn(paymentSession);
+        when(paymentsApiClient.getPaymentDetails("pid")).thenReturn(paymentDetails);
+        when(productCodeLoader.getProductCodes()).thenReturn(productCodes);
+        when(paymentDetails.getPaymentStatus()).thenReturn("accepted");
+        router.route(paymentReconciliation);
+        verify(standardTransactionHandler).handle(paymentDetails, paymentSession.get());
+        verifyNoInteractions(refundTransactionHandler);
+    }
+
+    @Test
+    void route_doesNothing_whenClassOfPaymentContainsEmptyString() {
+        when(paymentReconciliation.getPaymentResourceId()).thenReturn("pid");
+        Cost cost = new Cost();
+        cost.setClassOfPayment(Collections.singletonList(""));
+        cost.setProductType("productA");
+        PaymentResponse paymentResponse = new PaymentResponse();
+        paymentResponse.setCosts(Collections.singletonList(cost));
+        when(paymentsApiClient.getPaymentSession("pid")).thenReturn(Optional.of(paymentResponse));
+        when(paymentsApiClient.getPaymentDetails("pid")).thenReturn(paymentDetails);
+        router.route(paymentReconciliation);
+        verifyNoInteractions(standardTransactionHandler, refundTransactionHandler);
+    }
 }

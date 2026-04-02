@@ -1,8 +1,5 @@
 package uk.gov.companieshouse.paymentreconciliation.consumer.mapper;
 
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-
 import org.springframework.stereotype.Component;
 
 import uk.gov.companieshouse.api.model.payment.PaymentResponse;
@@ -17,26 +14,24 @@ public class RefundDaoMapper {
 
     private static final int PENCE_IN_POUND = 100;
 
-    private static final DateTimeFormatter REFUND_DATE_FORMATTER  = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSxxx")
-                                       .withZone(ZoneOffset.UTC);
     public RefundDaoMapper(ProductCodeLoader productCodeLoader) {
         this.productCodeLoader = productCodeLoader;
     }
 
-
-
     public RefundDao mapFromRefund(String paymentId, PaymentResponse paymentSession, RefundModel refund) {
         RefundDao refundDao = new RefundDao();
         refundDao.setTransactionId("x" + refund.getRefundId());
-        refundDao.setTransactionDate(REFUND_DATE_FORMATTER.format(refund.getCreatedAt()));
+        refundDao.setTransactionDate(refund.getCreatedAt());
         refundDao.setRefundId(refund.getRefundId());
-        refundDao.setRefundedAt(REFUND_DATE_FORMATTER.format(refund.getRefundedAt()));
+        refundDao.setRefundedAt(refund.getRefundedAt());
         refundDao.setPaymentId(paymentId);
         refundDao.setEmail(paymentSession.getCreatedBy().getEmail());
         refundDao.setPaymentMethod(paymentSession.getPaymentMethod());
         // Convert pence to pounds and store as string, this is to preserve trailing zeros for amounts like 100.00
         refundDao.setAmount(String.valueOf(refund.getAmount() / PENCE_IN_POUND));
-        refundDao.setCompanyNumber(paymentSession.getCompanyNumber());
+        // Always set companyNumber, use empty string if null
+        String companyNumber = paymentSession.getCompanyNumber();
+        refundDao.setCompanyNumber(companyNumber != null ? companyNumber : "");
         refundDao.setTransactionType("refund");
         refundDao.setOrderReference(paymentSession.getReference());
         refundDao.setStatus(refund.getStatus());

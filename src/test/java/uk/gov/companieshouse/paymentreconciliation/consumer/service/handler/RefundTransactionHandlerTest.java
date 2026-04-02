@@ -16,12 +16,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.retry.RetryException;
 
 import payments.payment_processed;
 import uk.gov.companieshouse.api.model.payment.PaymentResponse;
 import uk.gov.companieshouse.api.model.payment.RefundModel;
 import uk.gov.companieshouse.paymentreconciliation.consumer.apiclient.PaymentsApiClient;
+import uk.gov.companieshouse.paymentreconciliation.consumer.exception.RetryableException;
 import uk.gov.companieshouse.paymentreconciliation.consumer.mapper.RefundDaoMapper;
 import uk.gov.companieshouse.paymentreconciliation.consumer.model.RefundDao;
 import uk.gov.companieshouse.paymentreconciliation.consumer.repository.RefundRepository;
@@ -70,7 +70,22 @@ class RefundTransactionHandlerTest {
         when(paymentsApiClient.patchLatestRefundStatus(anyString(), any(RefundModel.class))).thenReturn(refundMock);
         when(refundMock.getStatus()).thenReturn("submitted");
 
-        assertThrows(RetryException.class, () -> handler.handle(paymentSession, paymentProcessed));
+        assertThrows(RetryableException.class, () -> handler.handle(paymentSession, paymentProcessed));
+        verify(paymentsApiClient).patchLatestRefundStatus(anyString(), any(RefundModel.class));
+    }
+
+    @Test
+    void handle_refundStatusSubmitted_patchesAndRetriesIfStillRefundRequested() {
+        when(paymentProcessed.getRefundId()).thenReturn("refund123");
+        when(paymentProcessed.getPaymentResourceId()).thenReturn("paymentId");
+        when(paymentSession.getRefunds()).thenReturn(List.of(refundMock));
+        when(refundMock.getRefundId()).thenReturn("refund123");
+        when(refundMock.getStatus()).thenReturn("refund-requested");
+
+        when(paymentsApiClient.patchLatestRefundStatus(anyString(), any(RefundModel.class))).thenReturn(refundMock);
+        when(refundMock.getStatus()).thenReturn("refund-requested");
+
+        assertThrows(RetryableException.class, () -> handler.handle(paymentSession, paymentProcessed));
         verify(paymentsApiClient).patchLatestRefundStatus(anyString(), any(RefundModel.class));
     }
 
@@ -195,6 +210,93 @@ class RefundTransactionHandlerTest {
 
         handler.handle(paymentSession, paymentProcessed);
 
+        verifyNoInteractions(refundDaoMapper);
+        verifyNoInteractions(refundRepository);
+        verifyNoInteractions(paymentsApiClient);
+    }
+
+    @Test
+    void handle_paymentSessionIsNull_doesNothing() {
+        handler.handle(null, paymentProcessed);
+        verifyNoInteractions(refundDaoMapper);
+        verifyNoInteractions(refundRepository);
+        verifyNoInteractions(paymentsApiClient);
+    }
+
+    @Test
+    void handle_refundsListIsNull_doesNothing() {
+        when(paymentProcessed.getRefundId()).thenReturn("refund123");
+        when(paymentSession.getRefunds()).thenReturn(null);
+        handler.handle(paymentSession, paymentProcessed);
+        verifyNoInteractions(refundDaoMapper);
+        verifyNoInteractions(refundRepository);
+        verifyNoInteractions(paymentsApiClient);
+    }
+
+    @Test
+    void handle_patchLatestRefundStatusThrowsException_propagates() {
+        when(paymentProcessed.getRefundId()).thenReturn("refund123");
+        when(paymentProcessed.getPaymentResourceId()).thenReturn("paymentId");
+        when(paymentSession.getRefunds()).thenReturn(List.of(refundMock));
+        when(refundMock.getRefundId()).thenReturn("refund123");
+        when(refundMock.getStatus()).thenReturn("submitted");
+        when(paymentsApiClient.patchLatestRefundStatus(anyString(), any(RefundModel.class))).thenThrow(new RuntimeException("fail"));
+        assertThrows(RuntimeException.class, () -> handler.handle(paymentSession, paymentProcessed));
+    }
+
+    @Test
+    void handle_mapFromRefundThrowsException_propagates() {
+        when(paymentProcessed.getRefundId()).thenReturn("refund123");
+        when(paymentProcessed.getPaymentResourceId()).thenReturn("paymentId");
+        when(paymentSession.getRefunds()).thenReturn(List.of(refundMock));
+        when(refundMock.getRefundId()).thenReturn("refund123");
+        when(refundMock.getStatus()).thenReturn("success");
+        when(refundDaoMapper.mapFromRefund(anyString(), eq(paymentSession), eq(refundMock))).thenThrow(new RuntimeException("fail"));
+        assertThrows(RuntimeException.class, () -> handler.handle(paymentSession, paymentProcessed));
+    }
+
+    @Test
+    void handle_saveThrowsException_propagates() {
+        when(paymentProcessed.getRefundId()).thenReturn("refund123");
+        when(paymentProcessed.getPaymentResourceId()).thenReturn("paymentId");
+        when(paymentSession.getRefunds()).thenReturn(List.of(refundMock));
+        when(refundMock.getRefundId()).thenReturn("refund123");
+        when(refundMock.getStatus()).thenReturn("success");
+        when(refundDaoMapper.mapFromRefund(anyString(), eq(paymentSession), eq(refundMock))).thenReturn(refundDao);
+        when(refundRepository.save(refundDao)).thenThrow(new RuntimeException("fail"));
+        assertThrows(RuntimeException.class, () -> handler.handle(paymentSession, paymentProcessed));
+    }
+
+    @Test
+    void handle_refundIdIsEmpty_doesNothing() {
+        when(paymentProcessed.getRefundId()).thenReturn("");
+        handler.handle(paymentSession, paymentProcessed);
+        verifyNoInteractions(refundDaoMapper);
+        verifyNoInteractions(refundRepository);
+        verifyNoInteractions(paymentsApiClient);
+    }
+
+    @Test
+    void handle_patchLatestRefundStatusReturnsNull_doesNothing() {
+        when(paymentProcessed.getRefundId()).thenReturn("refund123");
+        when(paymentProcessed.getPaymentResourceId()).thenReturn("paymentId");
+        when(paymentSession.getRefunds()).thenReturn(List.of(refundMock));
+        when(refundMock.getRefundId()).thenReturn("refund123");
+        when(refundMock.getStatus()).thenReturn("submitted");
+        when(paymentsApiClient.patchLatestRefundStatus(anyString(), any(RefundModel.class))).thenReturn(null);
+        handler.handle(paymentSession, paymentProcessed);
+        verify(paymentsApiClient).patchLatestRefundStatus(anyString(), any(RefundModel.class));
+        verifyNoInteractions(refundDaoMapper);
+        verifyNoInteractions(refundRepository);
+    }
+
+    @Test
+    void handle_noMatchingRefundIdInList_doesNothing() {
+        when(paymentProcessed.getRefundId()).thenReturn("refund123");
+        RefundModel otherRefund = org.mockito.Mockito.mock(RefundModel.class);
+        when(otherRefund.getRefundId()).thenReturn("other");
+        when(paymentSession.getRefunds()).thenReturn(List.of(otherRefund));
+        handler.handle(paymentSession, paymentProcessed);
         verifyNoInteractions(refundDaoMapper);
         verifyNoInteractions(refundRepository);
         verifyNoInteractions(paymentsApiClient);

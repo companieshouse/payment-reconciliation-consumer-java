@@ -28,9 +28,10 @@ public class PaymentReconciliationServiceRouter {
     private final RefundTransactionHandler refundTransactionHandler;
     private static final Logger LOGGER = LoggerFactory.getLogger(NAMESPACE);
 
-    public PaymentReconciliationServiceRouter(PaymentsApiClient paymentRefundApiClient, ProductCodeLoader productCodeLoader,
-                                             StandardTransactionHandler standardTransactionHandler,
-                                             RefundTransactionHandler refundTransactionHandler) {
+    public PaymentReconciliationServiceRouter(PaymentsApiClient paymentRefundApiClient,
+            ProductCodeLoader productCodeLoader,
+            StandardTransactionHandler standardTransactionHandler,
+            RefundTransactionHandler refundTransactionHandler) {
         this.paymentRefundApiClient = paymentRefundApiClient;
         this.productCodeLoader = productCodeLoader;
         this.standardTransactionHandler = standardTransactionHandler;
@@ -38,33 +39,36 @@ public class PaymentReconciliationServiceRouter {
     }
 
     public void route(payment_processed paymentReconciliation) {
-        Optional<PaymentResponse> paymentSessionOptional = paymentRefundApiClient.getPaymentSession(paymentReconciliation.getPaymentResourceId());
+        Optional<PaymentResponse> paymentSessionOptional = paymentRefundApiClient
+                .getPaymentSession(paymentReconciliation.getPaymentResourceId());
         if (paymentSessionOptional.isEmpty()) {
-            LOGGER.info("Payment not found or skipped for PaymentResourceId: %s".formatted(paymentReconciliation.getPaymentResourceId()), DataMapHolder.getLogMap());
+            LOGGER.info("Payment not found or skipped", DataMapHolder.getLogMap());
             return;
         }
         PaymentResponse paymentSession = paymentSessionOptional.get();
-        PaymentDetailsResponse paymentDetails = paymentRefundApiClient.getPaymentDetails(paymentReconciliation.getPaymentResourceId());
+        PaymentDetailsResponse paymentDetails = paymentRefundApiClient
+                .getPaymentDetails(paymentReconciliation.getPaymentResourceId());
 
         if (paymentDetails == null) {
-            LOGGER.info("Payment details not found for PaymentResourceId: %s".formatted(paymentReconciliation.getPaymentResourceId()), DataMapHolder.getLogMap());
-            throw new RetryableErrorException("Payment details not found for PaymentResourceId: " + paymentReconciliation.getPaymentResourceId());
+            LOGGER.info("Payment details not found", DataMapHolder.getLogMap());
+            throw new RetryableErrorException(
+                    "Payment details not found for PaymentResourceId: " + paymentReconciliation.getPaymentResourceId());
         }
-
         if (isReconcilable(paymentSession)) {
-            LOGGER.info("Reconciling payment processed message for payment id: %s".formatted(paymentReconciliation.getPaymentResourceId()), DataMapHolder.getLogMap());
+            LOGGER.info("Reconciling payment processed message", DataMapHolder.getLogMap());
             PaymentUtils.maskSensitiveFields(paymentSession, productCodeLoader);
             if (isRefundTransaction(paymentReconciliation)) {
-                LOGGER.info("Handling refund transaction for payment id: %s".formatted(paymentReconciliation.getPaymentResourceId()), DataMapHolder.getLogMap());
+                LOGGER.info("Handling refund transaction", DataMapHolder.getLogMap());
                 refundTransactionHandler.handle(paymentSession, paymentReconciliation);
-            } else if (paymentDetails.getPaymentStatus() != null && paymentDetails.getPaymentStatus().equals("accepted")) {
-                LOGGER.info("Handling standard transaction for payment id: %s".formatted(paymentReconciliation.getPaymentResourceId()), DataMapHolder.getLogMap());
+            } else if (paymentDetails.getPaymentStatus() != null
+                    && paymentDetails.getPaymentStatus().equals("accepted")) {
+                LOGGER.info("Handling standard transaction", DataMapHolder.getLogMap());
                 standardTransactionHandler.handle(paymentDetails, paymentSession);
             } else {
-                LOGGER.info("Payment processed message has unhandled status for payment id: %s".formatted(paymentReconciliation.getPaymentResourceId()), DataMapHolder.getLogMap());
+                LOGGER.info("Payment processed message has unhandled status", DataMapHolder.getLogMap());
             }
         } else {
-            LOGGER.info("Payment processed message is not reconcilable for payment id: %s".formatted(paymentReconciliation.getPaymentResourceId()), DataMapHolder.getLogMap());
+            LOGGER.info("Payment processed message is not reconcilable", DataMapHolder.getLogMap());
         }
     }
 
@@ -76,7 +80,6 @@ public class PaymentReconciliationServiceRouter {
     private static final String ORDERABLE_ITEM = "orderable-item";
 
     private boolean isReconcilable(PaymentResponse paymentSession) {
-
         if (paymentSession.getCosts() == null
                 || paymentSession.getCosts().isEmpty()
                 || paymentSession.getCosts().getFirst() == null) {
@@ -87,17 +90,19 @@ public class PaymentReconciliationServiceRouter {
             return false;
         }
 
-        String classOfPayment = paymentSession.getCosts().getFirst().getClassOfPayment().get(0);
-        String productType = paymentSession.getCosts().getFirst().getProductType();
-        if (productType == null) {
-            return false;
+        String classOfPayment = paymentSession.getCosts().getFirst().getClassOfPayment().getFirst();
+        if (classOfPayment.equals(DATA_MAINTENANCE) || classOfPayment.equals(ORDERABLE_ITEM)) {
+            String productType = paymentSession.getCosts().getFirst().getProductType();
+            Integer productCode = productCodeLoader.getProductCodes().get(productType);
+            if (productCode == null || productCode == 0) {
+                LOGGER.info("Not reconcilable due to product code", DataMapHolder.getLogMap());
+                return false;
+            }
+            LOGGER.info("Reconcilable payment", DataMapHolder.getLogMap());
+            return true;
         }
-
-        Integer productCode = productCodeLoader.getProductCodes().get(productType);
-        boolean isClassValid = DATA_MAINTENANCE.equals(classOfPayment) || ORDERABLE_ITEM.equals(classOfPayment);
-        boolean isProductCodeValid = productCode != null && productCode != 0;
-
-        return isClassValid && isProductCodeValid;
+        LOGGER.info("Not reconcilable due to class of payment", DataMapHolder.getLogMap());
+        return false;
     }
 
 }

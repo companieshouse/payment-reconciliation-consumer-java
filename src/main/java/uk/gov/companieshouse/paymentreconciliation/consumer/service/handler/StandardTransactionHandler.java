@@ -2,6 +2,7 @@ package uk.gov.companieshouse.paymentreconciliation.consumer.service.handler;
 
 import static uk.gov.companieshouse.paymentreconciliation.consumer.Application.NAMESPACE;
 
+import java.time.Instant;
 import java.util.List;
 
 import uk.gov.companieshouse.logging.Logger;
@@ -37,12 +38,16 @@ public class StandardTransactionHandler implements TransactionHandler<PaymentDet
     public void handle(PaymentDetailsResponse paymentDetails, PaymentResponse paymentResponse) {
         String paymentId = paymentResponse.getReference();
         LOGGER.info("Creating Eshu record for payment id: %s ".formatted(paymentId));
-        List<EshuDao> eshuResources = eshuMapper.mapFromPaymentResponse(paymentResponse, paymentId, paymentDetails.getTransactionDate());
+
+        //Convert getTransactionDate to Instant
+        Instant transactionDate = Instant.parse(paymentDetails.getTransactionDate());
+
+        List<EshuDao> eshuResources = eshuMapper.mapFromPaymentResponse(paymentResponse, paymentId, transactionDate);
         eshuRepository.saveAll(eshuResources);
 
         LOGGER.info("Creating PaymentTransaction record for payment id: %s".formatted(paymentId));
         List<PaymentTransactionsResourceDao> paymentTransactionsResources = paymentTransactionsResourceDaoMapper.mapFromPaymentResponse(
-                paymentResponse, paymentId, paymentDetails.getTransactionDate(), paymentDetails.getPaymentStatus());
+                paymentResponse, paymentId, transactionDate, paymentDetails.getPaymentStatus());
         transactionRepository.saveAll(paymentTransactionsResources);
     }
 }

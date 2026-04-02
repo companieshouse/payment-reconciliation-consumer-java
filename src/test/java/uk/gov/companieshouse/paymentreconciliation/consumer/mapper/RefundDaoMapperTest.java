@@ -47,23 +47,10 @@ class RefundDaoMapperTest {
         mapper = new RefundDaoMapper(productCodeLoader);
     }
 
-    @Test
-    void mapFromRefund_mapsAllFieldsCorrectly() {
 
-        // Arrange
-        String paymentId = "PAY123";
-        String refundId = "REF456";
-        String email = "test@ch.gov.uk";
-        String paymentMethod = "card";
-        String companyNumber = "12345678";
-        String reference = "ORD789";
-        String status = "pending";
-        String productType = "productTypeA";
-        int amount = 50000;
-
-        Instant createdAt = Instant.parse("2024-01-01T00:00:00Z");
-        Instant refundedAt = Instant.parse("2024-01-02T11:55:12Z");
-
+    private void setupMocks(String refundId, String email, String paymentMethod, String companyNumber,
+                           String reference, String status, String productType, int amount,
+                           Instant createdAt, Instant refundedAt) {
         when(refund.getRefundId()).thenReturn(refundId);
         when(refund.getCreatedAt()).thenReturn(createdAt);
         when(refund.getRefundedAt()).thenReturn(refundedAt);
@@ -79,20 +66,19 @@ class RefundDaoMapperTest {
         when(paymentResponse.getCompanyNumber()).thenReturn(companyNumber);
         when(paymentResponse.getReference()).thenReturn(reference);
         when(paymentResponse.getCosts()).thenReturn(Collections.singletonList(cost));
+    }
 
-        // Act
-        RefundDao result = mapper.mapFromRefund(paymentId, paymentResponse, refund);
-
-
-        // Format to string
+    private void assertRefundDaoFields(RefundDao result, String paymentId, String refundId, String email, String paymentMethod,
+                                       String companyNumber, String reference, String status, String amount,
+                                       Instant createdAt, Instant refundedAt, Integer productCode) {
         assertEquals("x" + refundId, result.getTransactionId());
-        assertEquals("2024-01-01T00:00:00.000+00:00", result.getTransactionDate());
+        assertEquals(createdAt, result.getTransactionDate());
         assertEquals(refundId, result.getRefundId());
-        assertEquals("2024-01-02T11:55:12.000+00:00", result.getRefundedAt());
+        assertEquals(refundedAt, result.getRefundedAt());
         assertEquals(paymentId, result.getPaymentId());
         assertEquals(email, result.getEmail());
         assertEquals(paymentMethod, result.getPaymentMethod());
-        assertEquals("500", result.getAmount());
+        assertEquals(amount, result.getAmount());
         assertEquals(companyNumber, result.getCompanyNumber());
         assertEquals("refund", result.getTransactionType());
         assertEquals(reference, result.getOrderReference());
@@ -100,33 +86,73 @@ class RefundDaoMapperTest {
         assertEquals("system", result.getUserId());
         assertEquals("X" + paymentId, result.getOriginalReference());
         assertEquals("", result.getDisputeDetails());
-        assertEquals(1234, result.getProductCode());
+        if (productCode == null) {
+            assertNull(result.getProductCode());
+        } else {
+            assertEquals(productCode.intValue(), result.getProductCode());
+        }
     }
 
     @Test
-    void mapFromRefund_nullProductType_returnsNullProductCode() {
-        // Arrange
+    void mapFromRefund_mapsAllFieldsCorrectly_companyNumberPresent() {
         String paymentId = "PAY123";
-        when(refund.getRefundId()).thenReturn("REF456");
-        when(refund.getCreatedAt()).thenReturn(Instant.now());
-        when(refund.getRefundedAt()).thenReturn(Instant.now());
-        when(refund.getAmount()).thenReturn(100);
-        when(refund.getStatus()).thenReturn("pending");
+        String refundId = "REF456";
+        String email = "test@ch.gov.uk";
+        String paymentMethod = "card";
+        String companyNumber = "12345678";
+        String reference = "ORD789";
+        String status = "pending";
+        String productType = "productTypeA";
+        int amount = 50000;
+        Instant createdAt = Instant.parse("2024-01-01T12:01:33Z");
+        Instant refundedAt = Instant.parse("2024-01-02T11:55:12Z");
 
-        when(createdBy.getEmail()).thenReturn("test@ch.gov.uk");
+        setupMocks(refundId, email, paymentMethod, companyNumber, reference, status, productType, amount, createdAt, refundedAt);
 
-        when(cost.getProductType()).thenReturn("unknownType");
-
-        when(paymentResponse.getCreatedBy()).thenReturn(createdBy);
-        when(paymentResponse.getPaymentMethod()).thenReturn("card");
-        when(paymentResponse.getCompanyNumber()).thenReturn("12345678");
-        when(paymentResponse.getReference()).thenReturn("ORD789");
-        when(paymentResponse.getCosts()).thenReturn(Collections.singletonList(cost));
-
-        // Act
         RefundDao result = mapper.mapFromRefund(paymentId, paymentResponse, refund);
+        assertRefundDaoFields(result, paymentId, refundId, email, paymentMethod, companyNumber, reference, status, "500", createdAt, refundedAt, 1234);
+    }
 
-        // Assert
-        assertNull(result.getProductCode());
+
+    @Test
+    void mapFromRefund_mapsAllFieldsCorrectly_companyNumberNotPresent() {
+        String paymentId = "PAY123";
+        String refundId = "REF456";
+        String email = "test@ch.gov.uk";
+        String paymentMethod = "card";
+        String companyNumber = ""; // Should be empty string if null
+        String reference = "ORD789";
+        String status = "pending";
+        String productType = "productTypeA";
+        int amount = 50000;
+        Instant createdAt = Instant.parse("2024-01-01T12:01:33Z");
+        Instant refundedAt = Instant.parse("2024-01-02T11:55:12Z");
+
+        setupMocks(refundId, email, paymentMethod, null, reference, status, productType, amount, createdAt, refundedAt);
+
+        RefundDao result = mapper.mapFromRefund(paymentId, paymentResponse, refund);
+        assertRefundDaoFields(result, paymentId, refundId, email, paymentMethod, companyNumber, reference, status, "500", createdAt, refundedAt, 1234);
+    }
+
+
+
+    @Test
+    void mapFromRefund_nullProductType_returnsNullProductCode() {
+        String paymentId = "PAY123";
+        String refundId = "REF456";
+        String email = "test@ch.gov.uk";
+        String paymentMethod = "card";
+        String companyNumber = "12345678";
+        String reference = "ORD789";
+        String status = "pending";
+        String productType = "unknownType";
+        int amount = 100;
+        Instant createdAt = Instant.now();
+        Instant refundedAt = Instant.now();
+
+        setupMocks(refundId, email, paymentMethod, companyNumber, reference, status, productType, amount, createdAt, refundedAt);
+
+        RefundDao result = mapper.mapFromRefund(paymentId, paymentResponse, refund);
+        assertRefundDaoFields(result, paymentId, refundId, email, paymentMethod, companyNumber, reference, status, "1", createdAt, refundedAt, null);
     }
 }
