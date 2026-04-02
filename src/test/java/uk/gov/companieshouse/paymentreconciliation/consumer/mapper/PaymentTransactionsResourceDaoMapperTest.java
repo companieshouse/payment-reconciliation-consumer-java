@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,46 +33,78 @@ class PaymentTransactionsResourceDaoMapperTest {
     @Mock
     private CreatedBy createdBy;
 
-    @Test
-    void mapFromPaymentResponse_shouldMapAllFieldsCorrectly() {
+
+    private void setupPaymentResponseMocks(String email, String paymentMethod, String companyNumber, String reference, String amount1, String amount2) {
         when(paymentResponse.getCosts()).thenReturn(List.of(cost1, cost2));
         when(paymentResponse.getCreatedBy()).thenReturn(createdBy);
-        when(createdBy.getEmail()).thenReturn("test@example.com");
-        when(paymentResponse.getPaymentMethod()).thenReturn("credit-card");
-        when(cost1.getAmount()).thenReturn("100");
-        when(cost2.getAmount()).thenReturn("200");
-        when(paymentResponse.getCompanyNumber()).thenReturn("12345678");
-        when(paymentResponse.getReference()).thenReturn("REF_001");
+        when(createdBy.getEmail()).thenReturn(email);
+        when(paymentResponse.getPaymentMethod()).thenReturn(paymentMethod);
+        when(cost1.getAmount()).thenReturn(amount1);
+        when(cost2.getAmount()).thenReturn(amount2);
+        when(paymentResponse.getCompanyNumber()).thenReturn(companyNumber);
+        when(paymentResponse.getReference()).thenReturn(reference);
+    }
 
+    private void assertPaymentTransactionsResourceDao(PaymentTransactionsResourceDao dao, String paymentId, Instant transactionDate, String email, String paymentMethod, String amount, String companyNumber, String transactionType, String orderReference, String status) {
+        assertEquals("X" + paymentId, dao.getTransactionId());
+        assertEquals(transactionDate, dao.getTransactionDate());
+        assertEquals(email, dao.getEmail());
+        assertEquals(paymentMethod, dao.getPaymentMethod());
+        assertEquals(amount, dao.getAmount());
+        assertEquals(companyNumber, dao.getCompanyNumber());
+        assertEquals(transactionType, dao.getTransactionType());
+        assertEquals(orderReference, dao.getOrderReference());
+        assertEquals(status, dao.getStatus());
+        assertEquals("system", dao.getUserId());
+        assertEquals("", dao.getOriginalReference());
+        assertEquals("", dao.getDisputeDetails());
+    }
+
+    @Test
+    void mapFromPaymentResponse_shouldMapAllFieldsCorrectly_companyNumberPresent() {
         String paymentId = "PAYID";
-        String transactionDate = "2024-06-01";
+        Instant transactionDate = Instant.parse("2024-01-01T12:01:33Z");
         String paymentStatus = "PAID";
+        String email = "test@example.com";
+        String paymentMethod = "credit-card";
+        String companyNumber = "12345678";
+        String reference = "REF_001";
+        String amount1 = "100";
+        String amount2 = "200";
+
+        setupPaymentResponseMocks(email, paymentMethod, companyNumber, reference, amount1, amount2);
 
         PaymentTransactionsResourceDaoMapper mapper = new PaymentTransactionsResourceDaoMapper();
-
-        // Act
         List<PaymentTransactionsResourceDao> result = mapper.mapFromPaymentResponse(
                 paymentResponse, paymentId, transactionDate, paymentStatus);
 
-        // Assert
         assertEquals(2, result.size());
+        assertPaymentTransactionsResourceDao(result.get(0), paymentId, transactionDate, email, paymentMethod, amount1, companyNumber, "Immediate bill", "REF-001", paymentStatus);
+        assertEquals(amount2, result.get(1).getAmount());
+    }
 
-        PaymentTransactionsResourceDao first = result.get(0);
-        assertEquals("XPAYID", first.getTransactionId());
-        assertEquals(transactionDate, first.getTransactionDate());
-        assertEquals("test@example.com", first.getEmail());
-        assertEquals("credit-card", first.getPaymentMethod());
-        assertEquals("100", first.getAmount());
-        assertEquals("12345678", first.getCompanyNumber());
-        assertEquals("Immediate bill", first.getTransactionType());
-        assertEquals("REF-001", first.getOrderReference());
-        assertEquals(paymentStatus, first.getStatus());
-        assertEquals("system", first.getUserId());
-        assertEquals("", first.getOriginalReference());
-        assertEquals("", first.getDisputeDetails());
 
-        PaymentTransactionsResourceDao second = result.get(1);
-        assertEquals("200", second.getAmount());
+    @Test
+    void mapFromPaymentResponse_shouldMapAllFieldsCorrectly_companyNumberNotPresent() {
+        String paymentId = "PAYID";
+        Instant transactionDate = Instant.parse("2024-01-01T12:01:33Z");
+        String paymentStatus = "PAID";
+        String email = "test@example.com";
+        String paymentMethod = "credit-card";
+        String companyNumber = ""; // Should be empty string if null
+        String reference = "REF_001";
+        String amount1 = "100";
+        String amount2 = "200";
+
+        setupPaymentResponseMocks(email, paymentMethod, null, reference, amount1, amount2);
+
+        PaymentTransactionsResourceDaoMapper mapper = new PaymentTransactionsResourceDaoMapper();
+        List<PaymentTransactionsResourceDao> result = mapper.mapFromPaymentResponse(
+                paymentResponse, paymentId, transactionDate, paymentStatus);
+
+        assertEquals(2, result.size());
+        assertPaymentTransactionsResourceDao(result.get(0), paymentId, transactionDate, email, paymentMethod, amount1, companyNumber, "Immediate bill", "REF-001", paymentStatus);
+        assertEquals(amount2, result.get(1).getAmount());
     }
 
     @Test
@@ -80,7 +113,7 @@ class PaymentTransactionsResourceDaoMapperTest {
 
         PaymentTransactionsResourceDaoMapper mapper = new PaymentTransactionsResourceDaoMapper();
         List<PaymentTransactionsResourceDao> result = mapper.mapFromPaymentResponse(
-                paymentResponse, "id", "date", "status");
+                paymentResponse, "id", Instant.now(), "status");
 
         assertTrue(result.isEmpty());
     }

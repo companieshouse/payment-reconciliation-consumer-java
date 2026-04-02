@@ -2,7 +2,6 @@ package uk.gov.companieshouse.paymentreconciliation.consumer.service.handler;
 
 import static uk.gov.companieshouse.paymentreconciliation.consumer.Application.NAMESPACE;
 
-import org.springframework.retry.RetryException;
 import org.springframework.stereotype.Component;
 
 import payments.payment_processed;
@@ -11,6 +10,7 @@ import uk.gov.companieshouse.api.model.payment.RefundModel;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.paymentreconciliation.consumer.apiclient.PaymentsApiClient;
+import uk.gov.companieshouse.paymentreconciliation.consumer.exception.RetryableException;
 import uk.gov.companieshouse.paymentreconciliation.consumer.logging.DataMapHolder;
 import uk.gov.companieshouse.paymentreconciliation.consumer.mapper.RefundDaoMapper;
 import uk.gov.companieshouse.paymentreconciliation.consumer.model.RefundDao;
@@ -46,17 +46,19 @@ public class RefundTransactionHandler implements TransactionHandler<PaymentRespo
             }
             if (refund != null) {
                 if (refund.getStatus().equals(STATUS_SUCCESS) || refund.getStatus().equals(STATUS_REFUND_SUCCESS)) {
-                    LOGGER.info("Refund successful. Reconciling...: %s".formatted(refund), DataMapHolder.getLogMap());
+                    LOGGER.info("Refund successful. Reconciling", DataMapHolder.getLogMap());
                     reconcileRefund(paymentProcessed.getPaymentResourceId(), paymentSession, refund);
                 } else if (refund.getStatus().equals(STATUS_FAILED)) {
                     LOGGER.info("Refund failed. Skipping reconciliation: %s".formatted(refund), DataMapHolder.getLogMap());
                 } else {
                     LOGGER.info("Refund status is still submitted, retrying: %s".formatted(refund), DataMapHolder.getLogMap());
-                    throw new RetryException("Refund status is still submitted");
+                    throw new RetryableException("Refund status is still submitted");
                 }
             } else {
-                LOGGER.debug("Refund is null after attempting to fetch latest status. Skipping further processing.", DataMapHolder.getLogMap());
+                LOGGER.info("Refund is null after attempting to fetch latest status. Skipping further processing.", DataMapHolder.getLogMap());
             }
+        } else {
+            LOGGER.info("No matching refund found for payment refunds", DataMapHolder.getLogMap());
         }
     }
 
@@ -78,7 +80,7 @@ public class RefundTransactionHandler implements TransactionHandler<PaymentRespo
     }
 
     private void reconcileRefund(String paymentId, PaymentResponse paymentSession, RefundModel refund) {
-        LOGGER.info("Creating refund record for payment id: %s".formatted(paymentId), DataMapHolder.getLogMap());
+        LOGGER.info("Creating refund record", DataMapHolder.getLogMap());
         RefundDao refundDao = refundDaoMapper.mapFromRefund(paymentId, paymentSession, refund);
         refundRepository.save(refundDao);
     }

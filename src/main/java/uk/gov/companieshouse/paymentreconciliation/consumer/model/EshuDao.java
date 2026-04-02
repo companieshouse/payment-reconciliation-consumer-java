@@ -1,5 +1,7 @@
 package uk.gov.companieshouse.paymentreconciliation.consumer.model;
 
+import java.time.Instant;
+
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -23,7 +25,7 @@ public class EshuDao {
     String madeUpDate;
 
     @Field("transaction_date")
-    String transactionDate;
+    Instant transactionDate;
 
 
     public String getPaymentReference() {
@@ -56,10 +58,10 @@ public class EshuDao {
     public void setMadeUpDate(String madeUpDate) {
         this.madeUpDate = madeUpDate;
     }
-    public String getTransactionDate() {
+    public Instant getTransactionDate() {
         return transactionDate;
     }
-    public void setTransactionDate(String transactionDate) {
+    public void setTransactionDate(Instant transactionDate) {
         this.transactionDate = transactionDate;
     }
 

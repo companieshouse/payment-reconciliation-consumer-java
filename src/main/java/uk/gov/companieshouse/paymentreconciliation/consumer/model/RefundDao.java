@@ -1,9 +1,9 @@
 package uk.gov.companieshouse.paymentreconciliation.consumer.model;
 
+import java.time.Instant;
+
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Document(collection = "refunds")
 public class RefundDao {
@@ -12,7 +12,7 @@ public class RefundDao {
     String transactionId;
 
     @Field("transaction_date")
-    String transactionDate;
+    Instant transactionDate;
 
     @Field("email")
     String email;
@@ -54,7 +54,7 @@ public class RefundDao {
     String refundId;
 
     @Field("refunded_at")
-    String refundedAt;
+    Instant refundedAt;
 
     public String getTransactionId() {
         return transactionId;
@@ -64,11 +64,11 @@ public class RefundDao {
         this.transactionId = transactionId;
     }
 
-    public String getTransactionDate() {
+    public Instant getTransactionDate() {
         return transactionDate;
     }
 
-    public void setTransactionDate(String transactionDate) {
+    public void setTransactionDate(Instant transactionDate) {
         this.transactionDate = transactionDate;
     }
 
@@ -176,11 +176,11 @@ public class RefundDao {
         this.refundId = refundId;
     }
 
-    public String getRefundedAt() {
+    public Instant getRefundedAt() {
         return refundedAt;
     }
 
-    public void setRefundedAt(String refundedAt) {
+    public void setRefundedAt(Instant refundedAt) {
         this.refundedAt = refundedAt;
     }
 }

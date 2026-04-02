@@ -3,7 +3,7 @@ package uk.gov.companieshouse.paymentreconciliation.consumer.service.handler;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 
@@ -21,7 +21,6 @@ import uk.gov.companieshouse.paymentreconciliation.consumer.model.EshuDao;
 import uk.gov.companieshouse.paymentreconciliation.consumer.model.PaymentTransactionsResourceDao;
 import uk.gov.companieshouse.paymentreconciliation.consumer.repository.EshuRepository;
 import uk.gov.companieshouse.paymentreconciliation.consumer.repository.TransactionRepository;
-
 
 @ExtendWith(MockitoExtension.class)
 class StandardTransactionHandlerTest {
@@ -57,24 +56,27 @@ class StandardTransactionHandlerTest {
 
     @BeforeEach
     void setUp() {
-        handler = new StandardTransactionHandler(eshuRepository, transactionRepository, eshuMapper, paymentTransactionsResourceDaoMapper);
+        handler = new StandardTransactionHandler(eshuRepository, transactionRepository, eshuMapper,
+                paymentTransactionsResourceDaoMapper);
     }
 
     @Test
     void handle_shouldMapAndSaveEshuAndPaymentTransactionsResources() {
         String paymentId = "PAY123";
-        String transactionDate = LocalDateTime.now().toString();
+        String transactionDateString = "2024-01-01T12:01:33Z";
+        Instant transactionDate = Instant.parse(transactionDateString);
         String paymentStatus = "PAID";
 
         when(paymentResponse.getReference()).thenReturn(paymentId);
-        when(paymentDetails.getTransactionDate()).thenReturn(transactionDate);
+        when(paymentDetails.getTransactionDate()).thenReturn(transactionDateString);
         when(paymentDetails.getPaymentStatus()).thenReturn(paymentStatus);
 
         List<EshuDao> eshuList = Arrays.asList(eshuDao1, eshuDao2);
         List<PaymentTransactionsResourceDao> daoList = Arrays.asList(paymentTransactionsResourceDao);
 
         when(eshuMapper.mapFromPaymentResponse(paymentResponse, paymentId, transactionDate)).thenReturn(eshuList);
-        when(paymentTransactionsResourceDaoMapper.mapFromPaymentResponse(paymentResponse, paymentId, transactionDate, paymentStatus)).thenReturn(daoList);
+        when(paymentTransactionsResourceDaoMapper.mapFromPaymentResponse(paymentResponse, paymentId, transactionDate,
+                paymentStatus)).thenReturn(daoList);
 
         // Act
         handler.handle(paymentDetails, paymentResponse);
@@ -83,22 +85,25 @@ class StandardTransactionHandlerTest {
         verify(eshuMapper).mapFromPaymentResponse(paymentResponse, paymentId, transactionDate);
         verify(eshuRepository).saveAll(eshuList);
 
-        verify(paymentTransactionsResourceDaoMapper).mapFromPaymentResponse(paymentResponse, paymentId, transactionDate, paymentStatus);
+        verify(paymentTransactionsResourceDaoMapper).mapFromPaymentResponse(paymentResponse, paymentId, transactionDate,
+                paymentStatus);
         verify(transactionRepository).saveAll(daoList);
     }
 
     @Test
     void handle_shouldHandleEmptyListsGracefully() {
         String paymentId = "PAY456";
-        String transactionDate = LocalDateTime.now().toString();
+        String transactionDateString = "2024-01-01T12:01:33Z";
+        Instant transactionDate = Instant.parse(transactionDateString);
         String paymentStatus = "FAILED";
 
         when(paymentResponse.getReference()).thenReturn(paymentId);
-        when(paymentDetails.getTransactionDate()).thenReturn(transactionDate);
+        when(paymentDetails.getTransactionDate()).thenReturn(transactionDateString);
         when(paymentDetails.getPaymentStatus()).thenReturn(paymentStatus);
 
         when(eshuMapper.mapFromPaymentResponse(paymentResponse, paymentId, transactionDate)).thenReturn(List.of());
-        when(paymentTransactionsResourceDaoMapper.mapFromPaymentResponse(paymentResponse, paymentId, transactionDate, paymentStatus)).thenReturn(List.of());
+        when(paymentTransactionsResourceDaoMapper.mapFromPaymentResponse(paymentResponse, paymentId, transactionDate,
+                paymentStatus)).thenReturn(List.of());
 
         handler.handle(paymentDetails, paymentResponse);
 

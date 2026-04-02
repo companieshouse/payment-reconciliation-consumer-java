@@ -4,6 +4,7 @@ import uk.gov.companieshouse.api.model.payment.PaymentResponse;
 import uk.gov.companieshouse.paymentreconciliation.consumer.config.ProductCodeLoader;
 import uk.gov.companieshouse.paymentreconciliation.consumer.model.EshuDao;
 import java.util.List;
+import java.time.Instant;
 import java.util.ArrayList;
 
 import org.springframework.stereotype.Component;
@@ -14,7 +15,7 @@ public class EshuMapper {
     public EshuMapper(ProductCodeLoader productCodeLoader) {
         this.productCodeLoader = productCodeLoader;
     }
-    public List<EshuDao> mapFromPaymentResponse(PaymentResponse paymentResponse, String paymentId, String transactionDate) {
+    public List<EshuDao> mapFromPaymentResponse(PaymentResponse paymentResponse, String paymentId, Instant transactionDate) {
         List<EshuDao> eshuResources = new ArrayList<>();
         for (var cost : paymentResponse.getCosts()) {
             String productType = cost.getProductType();
@@ -22,7 +23,9 @@ public class EshuMapper {
             EshuDao eshu = new EshuDao();
             eshu.setPaymentReference("X" + paymentId);
             eshu.setProductCode(productCode);
-            eshu.setCompanyNumber(paymentResponse.getCompanyNumber());
+            // Always set companyNumber, use empty string if null
+            String companyNumber = paymentResponse.getCompanyNumber();
+            eshu.setCompanyNumber(companyNumber != null ? companyNumber : "");
             eshu.setFilingDate("");
             eshu.setMadeUpDate("");
             eshu.setTransactionDate(transactionDate);
