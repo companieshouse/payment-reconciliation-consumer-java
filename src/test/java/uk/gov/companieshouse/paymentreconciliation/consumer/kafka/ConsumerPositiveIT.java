@@ -74,9 +74,6 @@ class ConsumerPositiveIT extends AbstractKafkaIT {
     @Autowired
     private MongoTemplate mongoTemplate;
 
-    @Autowired
-    private ProductCodeLoader productCodeLoader;
-
     @Container
     private static final MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0.13");
 
