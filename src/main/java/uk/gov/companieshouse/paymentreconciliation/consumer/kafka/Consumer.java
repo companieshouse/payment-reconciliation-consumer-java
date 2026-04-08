@@ -50,7 +50,7 @@ public class Consumer {
             throw ex;
         }
         finally {
-         DataMapHolder.clear();
+               DataMapHolder.clear();
         }
     }
 

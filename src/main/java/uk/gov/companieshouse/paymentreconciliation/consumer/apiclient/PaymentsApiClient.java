@@ -51,9 +51,9 @@ public class PaymentsApiClient {
             String requestUri = GET_PAYMENT_SESSION_URI.formatted(paymentId);
             return Optional.ofNullable(client.privatePayment().getPaymentSession(requestUri).execute().getData());
         } catch (ApiErrorResponseException ex) {
-            LOGGER.error(String.format("Unable to obtain response from %s for resource ID: %s", GET_PAYMENT_SESSION_URI, paymentId), DataMapHolder.getLogMap());
+            LOGGER.error(String.format("Error response received for " + GET_PAYMENT_SESSION_URI, paymentId), ex, DataMapHolder.getLogMap());
             if (ex.getStatusCode() == HttpStatus.GONE.value() && checkSkipGoneResource(paymentId)) {
-                LOGGER.info(String.format("Skipping message for Payment ID [%s] due to GONE response and SKIP_GONE_RESOURCE configuration", paymentId), DataMapHolder.getLogMap());
+                LOGGER.error(String.format("Skipping message for Payment ID [%s] due to GONE response and SKIP_GONE_RESOURCE configuration", paymentId), ex, DataMapHolder.getLogMap());
                 return Optional.empty();
             }
             responseHandler.handle(GET_PAYMENT_SESSION_URI, paymentId, ex);

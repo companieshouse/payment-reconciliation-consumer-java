@@ -24,6 +24,7 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +38,7 @@ import org.testcontainers.shaded.org.apache.commons.io.IOUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 
 import payments.payment_processed;
@@ -74,22 +76,33 @@ class ConsumerPositiveIT extends AbstractKafkaIT {
     private MongoTemplate mongoTemplate;
 
     @Container
-    private static final MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0.13");
+    private static final MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:8.2.5-noble");
 
     private static final String ESHU_COLLECTION = "eshu";
     private static final String TRANSACTION_COLLECTION = "payment_transaction";
     private static final String REFUND_COLLECTION = "refunds";
 
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+
     @DynamicPropertySource
     static void props(DynamicPropertyRegistry registry) {
         registry.add("steps", () -> 1);
-        registry.add("spring.data.mongodb.uri", mongoDBContainer::getReplicaSetUrl);
+        registry.add("spring.mongodb.uri", mongoDBContainer::getReplicaSetUrl);
+    }
+
+    @BeforeAll
+    static void setupAll() {
+        objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+        objectMapper.registerModule(new JavaTimeModule());
     }
 
     @BeforeEach
     void setup() {
         testConsumerAspect.resetLatch();
         testConsumer.poll(Duration.ofMillis(1000));
+        mongoTemplate.createCollection(ESHU_COLLECTION);
+        mongoTemplate.createCollection(TRANSACTION_COLLECTION);
+        mongoTemplate.createCollection(REFUND_COLLECTION);
     }
 
     @AfterEach
@@ -113,9 +126,6 @@ class ConsumerPositiveIT extends AbstractKafkaIT {
         PaymentTransactionsResourceDao transactionDocumentFromMongo = transactionRepository.findAll().getFirst();
         EshuDao eshuDocumentFromMongo = eshuRepository.findAll().getFirst();
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
-
         String transactionDocumentJson = IOUtils.resourceToString("/mongoDb/payment_transaction.json",
                 StandardCharsets.UTF_8);
         String eshuDocumentJson = IOUtils.resourceToString("/mongoDb/eshu.json", StandardCharsets.UTF_8);
@@ -135,13 +145,10 @@ class ConsumerPositiveIT extends AbstractKafkaIT {
 
         // Act
         sendMessageToKafka(MAIN_TOPIC, message);
-        awaitLatchOrFail(20);
+        awaitLatchOrFail(5);
 
         // Assert
         RefundDao refundDocumentFromMongo = refundRepository.findAll().getFirst();
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
 
         String refundDocumentJson = IOUtils.resourceToString("/mongoDb/refund.json", StandardCharsets.UTF_8);
         RefundDao expectedRefund = objectMapper.readValue(refundDocumentJson, RefundDao.class);
