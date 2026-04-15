@@ -19,7 +19,7 @@ import uk.gov.companieshouse.paymentreconciliation.consumer.repository.EshuRepos
 import uk.gov.companieshouse.paymentreconciliation.consumer.repository.TransactionRepository;
 
 @Component
-public class StandardTransactionHandler implements TransactionHandler<PaymentDetailsResponse, PaymentResponse> {
+public class StandardTransactionHandler {
     private final EshuRepository eshuRepository;
     private final TransactionRepository transactionRepository;
     private final EshuMapper eshuMapper;
@@ -34,9 +34,8 @@ public class StandardTransactionHandler implements TransactionHandler<PaymentDet
         this.paymentTransactionsResourceDaoMapper = paymentTransactionsResourceDaoMapper;
     }
 
-    @Override
-    public void handle(PaymentDetailsResponse paymentDetails, PaymentResponse paymentResponse) {
-        String paymentId = paymentResponse.getReference();
+
+    public void handle(PaymentDetailsResponse paymentDetails, PaymentResponse paymentResponse, String paymentId) {
         LOGGER.info("Creating Eshu record for payment id: %s ".formatted(paymentId));
 
         //Convert getTransactionDate to Instant

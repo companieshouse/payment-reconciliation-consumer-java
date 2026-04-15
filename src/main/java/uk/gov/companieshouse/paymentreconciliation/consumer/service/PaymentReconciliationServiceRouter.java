@@ -63,7 +63,7 @@ public class PaymentReconciliationServiceRouter {
             } else if (paymentDetails.getPaymentStatus() != null
                     && paymentDetails.getPaymentStatus().equals("accepted")) {
                 LOGGER.info("Handling standard transaction", DataMapHolder.getLogMap());
-                standardTransactionHandler.handle(paymentDetails, paymentSession);
+                standardTransactionHandler.handle(paymentDetails, paymentSession, paymentReconciliation.getPaymentResourceId());
             } else {
                 LOGGER.info("Payment processed message has unhandled status", DataMapHolder.getLogMap());
             }
