@@ -48,6 +48,22 @@ public class TestUtils {
         return objectMapper.writeValueAsString(apiResponse.getData());
     }
 
+    public static String getPaymentSensitiveResponse() throws IOException {
+        String json = IOUtils.resourceToString("/apiResponses/paymentSensitiveResponse.json", StandardCharsets.UTF_8);
+        ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
+        PaymentResponse paymentResponse = objectMapper.readValue(json, PaymentResponse.class);
+        var apiResponse = new ApiResponse<>(HttpStatus.OK.value(), null, paymentResponse);
+        return objectMapper.writeValueAsString(apiResponse.getData());
+    }
+
+    public static String getPaymentDetailsSensitiveResponse() throws IOException {
+        String json = IOUtils.resourceToString("/apiResponses/paymentDetailsSensitiveResponse.json", StandardCharsets.UTF_8);
+        ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
+        PaymentDetailsResponse paymentResponse = objectMapper.readValue(json, PaymentDetailsResponse.class);
+        var apiResponse = new ApiResponse<>(HttpStatus.OK.value(), null, paymentResponse);
+        return objectMapper.writeValueAsString(apiResponse.getData());
+    }
+
     public static String getLatestRefund() throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
         RefundModel refund = new RefundModel();
