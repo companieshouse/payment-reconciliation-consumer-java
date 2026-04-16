@@ -8,7 +8,6 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpStatus;
 import org.testcontainers.shaded.org.apache.commons.io.IOUtils;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
@@ -64,25 +63,19 @@ public class TestUtils {
         return objectMapper.writeValueAsString(apiResponse.getData());
     }
 
-    public static String getLatestRefund() throws JsonProcessingException {
+    public static String getLatestRefund() throws IOException {
+        String json = IOUtils.resourceToString("/apiResponses/refundPatchResponse.json", StandardCharsets.UTF_8);
         ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
-        RefundModel refund = new RefundModel();
-        refund.setRefundId("ref1234");
-        refund.setStatus("success");
-        refund.setAmount(10000);
-        refund.setExternalRefundUrl("https://example.com/refund/ref1234");
-        refund.setCreatedAt(Instant.parse("2026-04-01T06:44:32.354Z"));
-        refund.setRefundedAt(Instant.parse("2026-04-02T06:44:32.354Z"));
-
-        var apiResponse = new ApiResponse<>(HttpStatus.OK.value(), null, refund);
+        RefundModel refundModel = objectMapper.readValue(json, RefundModel.class);
+        var apiResponse = new ApiResponse<>(HttpStatus.OK.value(), null, refundModel);
         return objectMapper.writeValueAsString(apiResponse.getData());
     }
 
     @NotNull
     public static payment_processed getPaymentProcessed() {
         payment_processed paymentProcessed = new payment_processed();
-        paymentProcessed.setAttempt(1);
-        paymentProcessed.setPaymentResourceId("P9hl8PrKRBk1Zmc");
+                paymentProcessed.setAttempt(1);
+                paymentProcessed.setPaymentResourceId("P9hl8PrKRBk1Zmc");
         return paymentProcessed;
     }
 }

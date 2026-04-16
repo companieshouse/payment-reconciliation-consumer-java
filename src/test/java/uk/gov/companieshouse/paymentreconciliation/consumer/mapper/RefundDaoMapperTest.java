@@ -80,8 +80,8 @@ class RefundDaoMapperTest {
         assertEquals(paymentMethod, result.getPaymentMethod());
         assertEquals(amount, result.getAmount());
         assertEquals(companyNumber, result.getCompanyNumber());
-        assertEquals("refund", result.getTransactionType());
-        assertEquals(reference, result.getOrderReference());
+        assertEquals("Refund", result.getTransactionType());
+        assertEquals(reference.replace("_", "-"), result.getOrderReference());
         assertEquals(status, result.getStatus());
         assertEquals("system", result.getUserId());
         assertEquals("X" + paymentId, result.getOriginalReference());
@@ -100,7 +100,7 @@ class RefundDaoMapperTest {
         String email = "test@ch.gov.uk";
         String paymentMethod = "card";
         String companyNumber = "12345678";
-        String reference = "ORD789";
+        String reference = "ORD_789";
         String status = "pending";
         String productType = "productTypeA";
         int amount = 50000;
@@ -121,7 +121,7 @@ class RefundDaoMapperTest {
         String email = "test@ch.gov.uk";
         String paymentMethod = "card";
         String companyNumber = ""; // Should be empty string if null
-        String reference = "ORD789";
+        String reference = "ORD_789";
         String status = "pending";
         String productType = "productTypeA";
         int amount = 50000;
@@ -143,7 +143,7 @@ class RefundDaoMapperTest {
         String email = "test@ch.gov.uk";
         String paymentMethod = "card";
         String companyNumber = "12345678";
-        String reference = "ORD789";
+        String reference = "ORD_789";
         String status = "pending";
         String productType = "unknownType";
         int amount = 100;
