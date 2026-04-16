@@ -42,8 +42,6 @@
         <skip.unit.tests>false</skip.unit.tests>
         <sonar.exclusions>**/model/**</sonar.exclusions>
         <assertj-core-version>3.27.7</assertj-core-version>
-        <tomcat-embed-core.version>11.0.21</tomcat-embed-core.version>
-        <grpc-bom.version>1.80.0</grpc-bom.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -58,20 +56,20 @@
             <dependency>
                 <groupId>org.apache.tomcat.embed</groupId>
                 <artifactId>tomcat-embed-websocket</artifactId>
-                <version>${tomcat-embed-core.version}</version>
+                <version>11.0.21</version>
             </dependency>
             <!-- CVE-2026-34500, CVE-2026-34486, CVE-2026-34487, CVE-2026-34483 -->
             <dependency>
                 <groupId>org.apache.tomcat.embed</groupId>
                 <artifactId>tomcat-embed-core</artifactId>
-                <version>${tomcat-embed-core.version}</version>
+                <version>11.0.21</version>
                 <scope>compile</scope>
             </dependency>
             <!-- CVE-2026-33186 -->
             <dependency>
                 <groupId>io.grpc</groupId>
                 <artifactId>grpc-bom</artifactId>
-                <version>${grpc-bom.version}</version>
+                <version>1.80.0</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -220,6 +218,11 @@
                 <exclusion>
                     <groupId>com.dynatrace.hash4j</groupId>
                     <artifactId>hash4j</artifactId>
+                </exclusion>
+                <!-- CVE-2026-34480, CVE-2026-34477, CVE-2026-34478 -->
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-core</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
