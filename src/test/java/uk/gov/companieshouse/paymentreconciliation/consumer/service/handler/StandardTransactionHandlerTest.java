@@ -67,7 +67,6 @@ class StandardTransactionHandlerTest {
         Instant transactionDate = Instant.parse(transactionDateString);
         String paymentStatus = "PAID";
 
-        when(paymentResponse.getReference()).thenReturn(paymentId);
         when(paymentDetails.getTransactionDate()).thenReturn(transactionDateString);
         when(paymentDetails.getPaymentStatus()).thenReturn(paymentStatus);
 
@@ -79,7 +78,7 @@ class StandardTransactionHandlerTest {
                 paymentStatus)).thenReturn(daoList);
 
         // Act
-        handler.handle(paymentDetails, paymentResponse);
+        handler.handle(paymentDetails, paymentResponse, "PAY123");
 
         // Assert
         verify(eshuMapper).mapFromPaymentResponse(paymentResponse, paymentId, transactionDate);
@@ -97,7 +96,6 @@ class StandardTransactionHandlerTest {
         Instant transactionDate = Instant.parse(transactionDateString);
         String paymentStatus = "FAILED";
 
-        when(paymentResponse.getReference()).thenReturn(paymentId);
         when(paymentDetails.getTransactionDate()).thenReturn(transactionDateString);
         when(paymentDetails.getPaymentStatus()).thenReturn(paymentStatus);
 
@@ -105,7 +103,7 @@ class StandardTransactionHandlerTest {
         when(paymentTransactionsResourceDaoMapper.mapFromPaymentResponse(paymentResponse, paymentId, transactionDate,
                 paymentStatus)).thenReturn(List.of());
 
-        handler.handle(paymentDetails, paymentResponse);
+        handler.handle(paymentDetails, paymentResponse, "PAY456");
 
         verify(eshuRepository).saveAll(List.of());
         verify(transactionRepository).saveAll(List.of());

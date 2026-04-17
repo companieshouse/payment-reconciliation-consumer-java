@@ -126,8 +126,7 @@ class ConsumerPositiveIT extends AbstractKafkaIT {
         PaymentTransactionsResourceDao transactionDocumentFromMongo = transactionRepository.findAll().getFirst();
         EshuDao eshuDocumentFromMongo = eshuRepository.findAll().getFirst();
 
-        String transactionDocumentJson = IOUtils.resourceToString("/mongoDb/payment_transaction.json",
-                StandardCharsets.UTF_8);
+        String transactionDocumentJson = IOUtils.resourceToString("/mongoDb/payment_transaction.json",StandardCharsets.UTF_8);
         String eshuDocumentJson = IOUtils.resourceToString("/mongoDb/eshu.json", StandardCharsets.UTF_8);
         EshuDao expectedEshu = objectMapper.readValue(eshuDocumentJson, EshuDao.class);
         PaymentTransactionsResourceDao expectedTransaction = objectMapper.readValue(transactionDocumentJson,
@@ -136,6 +135,30 @@ class ConsumerPositiveIT extends AbstractKafkaIT {
         assertThat(transactionDocumentFromMongo).usingRecursiveComparison().isEqualTo(expectedTransaction);
         assertThat(eshuDocumentFromMongo).usingRecursiveComparison().isEqualTo(expectedEshu);
     }
+
+    @Test
+    void shouldConsumePaymentProcessMessageStandardTransactionSuccessfullySensitiveData() throws Exception {
+        // Arrange
+        byte[] message = createPaymentProcessedMessage();
+        stubPaymentApiSensitiveResponses();
+
+        // Act
+        sendMessageToKafka(MAIN_TOPIC, message);
+        awaitLatchOrFail(100);
+
+        // Assert
+        PaymentTransactionsResourceDao transactionDocumentFromMongo = transactionRepository.findAll().getFirst();
+        EshuDao eshuDocumentFromMongo = eshuRepository.findAll().getFirst();
+
+        String transactionDocumentJson = IOUtils.resourceToString("/mongoDb/payment_transaction-sensitive_data.json",StandardCharsets.UTF_8);
+        String eshuDocumentJson = IOUtils.resourceToString("/mongoDb/eshu-sensitive_data.json", StandardCharsets.UTF_8);
+        EshuDao expectedEshu = objectMapper.readValue(eshuDocumentJson, EshuDao.class);
+        PaymentTransactionsResourceDao expectedTransaction = objectMapper.readValue(transactionDocumentJson,PaymentTransactionsResourceDao.class);
+
+        assertThat(transactionDocumentFromMongo).usingRecursiveComparison().isEqualTo(expectedTransaction);
+        assertThat(eshuDocumentFromMongo).usingRecursiveComparison().isEqualTo(expectedEshu);
+    }
+
 
     @Test
     void shouldConsumePaymentProcessMessageRefundTransactionSuccessfully() throws Exception {
@@ -183,6 +206,17 @@ class ConsumerPositiveIT extends AbstractKafkaIT {
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withBody(TestUtils.getPaymentDetailsResponse())));
+    }
+
+     private void stubPaymentApiSensitiveResponses() throws IOException {
+        stubFor(get(GET_URI)
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withBody(TestUtils.getPaymentSensitiveResponse())));
+        stubFor(get("/private/payments/P9hl8PrKRBk1Zmc/payment-details")
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withBody(TestUtils.getPaymentDetailsSensitiveResponse())));
     }
 
     private void stubRefundPaymentApiResponses() throws IOException {

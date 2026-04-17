@@ -32,8 +32,8 @@ public class RefundDaoMapper {
         // Always set companyNumber, use empty string if null
         String companyNumber = paymentSession.getCompanyNumber();
         refundDao.setCompanyNumber(companyNumber != null ? companyNumber : "");
-        refundDao.setTransactionType("refund");
-        refundDao.setOrderReference(paymentSession.getReference());
+        refundDao.setTransactionType("Refund");
+        refundDao.setOrderReference(paymentSession.getReference().replace("_", "-"));
         refundDao.setStatus(refund.getStatus());
         refundDao.setUserId("system");
         refundDao.setOriginalReference("X"+paymentId);

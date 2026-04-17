@@ -2,21 +2,11 @@ package uk.gov.companieshouse.paymentreconciliation.consumer.utils;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.time.Instant;
 
 import org.jetbrains.annotations.NotNull;
-import org.springframework.http.HttpStatus;
 import org.testcontainers.shaded.org.apache.commons.io.IOUtils;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-
 import payments.payment_processed;
-import uk.gov.companieshouse.api.model.ApiResponse;
-import uk.gov.companieshouse.api.model.payment.PaymentResponse;
-import uk.gov.companieshouse.api.model.payment.RefundModel;
-import uk.gov.companieshouse.api.payments.PaymentDetailsResponse;
 
 public class TestUtils {
 
@@ -25,48 +15,34 @@ public class TestUtils {
     public static final String GET_URI = "/payments/P9hl8PrKRBk1Zmc";
 
     public static String getPaymentResponse() throws IOException {
-        String json = IOUtils.resourceToString("/apiResponses/paymentResponse.json", StandardCharsets.UTF_8);
-        ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
-        PaymentResponse paymentResponse = objectMapper.readValue(json, PaymentResponse.class);
-        var apiResponse = new ApiResponse<>(HttpStatus.OK.value(), null, paymentResponse);
-        return objectMapper.writeValueAsString(apiResponse.getData());
+        return IOUtils.resourceToString("/apiResponses/paymentResponse.json", StandardCharsets.UTF_8);
     }
 
     public static String getPaymentRefundResponse() throws IOException {
-        String json = IOUtils.resourceToString("/apiResponses/paymentRefundResponse.json", StandardCharsets.UTF_8);
-        ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
-        PaymentResponse paymentResponse = objectMapper.readValue(json, PaymentResponse.class);
-        var apiResponse = new ApiResponse<>(HttpStatus.OK.value(), null, paymentResponse);
-        return objectMapper.writeValueAsString(apiResponse.getData());
+        return IOUtils.resourceToString("/apiResponses/paymentRefundResponse.json", StandardCharsets.UTF_8);
     }
 
     public static String getPaymentDetailsResponse() throws IOException {
-        String json = IOUtils.resourceToString("/apiResponses/paymentDetailsResponse.json", StandardCharsets.UTF_8);
-        ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
-        PaymentDetailsResponse paymentResponse = objectMapper.readValue(json, PaymentDetailsResponse.class);
-        var apiResponse = new ApiResponse<>(HttpStatus.OK.value(), null, paymentResponse);
-        return objectMapper.writeValueAsString(apiResponse.getData());
+        return IOUtils.resourceToString("/apiResponses/paymentDetailsResponse.json", StandardCharsets.UTF_8);
     }
 
-    public static String getLatestRefund() throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
-        RefundModel refund = new RefundModel();
-        refund.setRefundId("ref1234");
-        refund.setStatus("success");
-        refund.setAmount(10000);
-        refund.setExternalRefundUrl("https://example.com/refund/ref1234");
-        refund.setCreatedAt(Instant.parse("2026-04-01T06:44:32.354Z"));
-        refund.setRefundedAt(Instant.parse("2026-04-02T06:44:32.354Z"));
+    public static String getPaymentSensitiveResponse() throws IOException {
+        return IOUtils.resourceToString("/apiResponses/paymentSensitiveResponse.json", StandardCharsets.UTF_8);
+    }
 
-        var apiResponse = new ApiResponse<>(HttpStatus.OK.value(), null, refund);
-        return objectMapper.writeValueAsString(apiResponse.getData());
+    public static String getPaymentDetailsSensitiveResponse() throws IOException {
+        return IOUtils.resourceToString("/apiResponses/paymentDetailsSensitiveResponse.json", StandardCharsets.UTF_8);
+    }
+
+    public static String getLatestRefund() throws IOException {
+        return IOUtils.resourceToString("/apiResponses/refundPatchResponse.json", StandardCharsets.UTF_8);
     }
 
     @NotNull
     public static payment_processed getPaymentProcessed() {
         payment_processed paymentProcessed = new payment_processed();
-        paymentProcessed.setAttempt(1);
-        paymentProcessed.setPaymentResourceId("P9hl8PrKRBk1Zmc");
+                paymentProcessed.setAttempt(1);
+                paymentProcessed.setPaymentResourceId("P9hl8PrKRBk1Zmc");
         return paymentProcessed;
     }
 }

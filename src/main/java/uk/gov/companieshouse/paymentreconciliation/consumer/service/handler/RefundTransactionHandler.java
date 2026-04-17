@@ -17,7 +17,7 @@ import uk.gov.companieshouse.paymentreconciliation.consumer.model.RefundDao;
 import uk.gov.companieshouse.paymentreconciliation.consumer.repository.RefundRepository;
 
 @Component
-public class RefundTransactionHandler implements TransactionHandler<PaymentResponse, payment_processed> {
+public class RefundTransactionHandler {
     private final PaymentsApiClient paymentRefundApiClient;
     private final RefundRepository refundRepository;
     private final RefundDaoMapper refundDaoMapper;
@@ -35,7 +35,6 @@ public class RefundTransactionHandler implements TransactionHandler<PaymentRespo
         this.refundDaoMapper = refundDaoMapper;
     }
 
-    @Override
     public void handle(PaymentResponse paymentSession, payment_processed paymentProcessed) {
 
         RefundModel refund = getRefund(paymentSession, paymentProcessed);

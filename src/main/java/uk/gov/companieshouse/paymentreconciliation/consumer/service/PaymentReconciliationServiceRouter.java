@@ -46,16 +46,16 @@ public class PaymentReconciliationServiceRouter {
             return;
         }
         PaymentResponse paymentSession = paymentSessionOptional.get();
-        PaymentDetailsResponse paymentDetails = paymentRefundApiClient
-                .getPaymentDetails(paymentReconciliation.getPaymentResourceId());
-
-        if (paymentDetails == null) {
-            LOGGER.info("Payment details not found", DataMapHolder.getLogMap());
-            throw new RetryableErrorException(
-                    "Payment details not found for PaymentResourceId: " + paymentReconciliation.getPaymentResourceId());
-        }
         if (isReconcilable(paymentSession)) {
             LOGGER.info("Reconciling payment processed message", DataMapHolder.getLogMap());
+            PaymentDetailsResponse paymentDetails = paymentRefundApiClient
+                .getPaymentDetails(paymentReconciliation.getPaymentResourceId());
+
+            if (paymentDetails == null) {
+                LOGGER.info("Payment details not found", DataMapHolder.getLogMap());
+                throw new RetryableErrorException(
+                        "Payment details not found for PaymentResourceId: " + paymentReconciliation.getPaymentResourceId());
+            }
             PaymentUtils.maskSensitiveFields(paymentSession, productCodeLoader);
             if (isRefundTransaction(paymentReconciliation)) {
                 LOGGER.info("Handling refund transaction", DataMapHolder.getLogMap());
@@ -63,7 +63,7 @@ public class PaymentReconciliationServiceRouter {
             } else if (paymentDetails.getPaymentStatus() != null
                     && paymentDetails.getPaymentStatus().equals("accepted")) {
                 LOGGER.info("Handling standard transaction", DataMapHolder.getLogMap());
-                standardTransactionHandler.handle(paymentDetails, paymentSession);
+                standardTransactionHandler.handle(paymentDetails, paymentSession, paymentReconciliation.getPaymentResourceId());
             } else {
                 LOGGER.info("Payment processed message has unhandled status", DataMapHolder.getLogMap());
             }
