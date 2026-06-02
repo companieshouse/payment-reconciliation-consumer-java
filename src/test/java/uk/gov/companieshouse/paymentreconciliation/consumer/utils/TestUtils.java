@@ -10,8 +10,6 @@ import payments.payment_processed;
 
 public class TestUtils {
 
-    public static final String BASE_URL = "http://api-payments.chs.local";
-
     public static final String GET_URI = "/payments/P9hl8PrKRBk1Zmc";
 
     public static String getPaymentResponse() throws IOException {

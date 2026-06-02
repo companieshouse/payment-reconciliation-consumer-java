@@ -6,7 +6,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.patch;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
-import static uk.gov.companieshouse.paymentreconciliation.consumer.kafka.KafkaUtils.MAIN_TOPIC;
 import static uk.gov.companieshouse.paymentreconciliation.consumer.utils.TestUtils.GET_URI;
 import static uk.gov.companieshouse.paymentreconciliation.consumer.utils.TestUtils.getPaymentProcessed;
 
@@ -119,7 +118,7 @@ class ConsumerPositiveIT extends AbstractKafkaIT {
         stubPaymentApiResponses();
 
         // Act
-        sendMessageToKafka(MAIN_TOPIC, message);
+        sendMessageToKafka(message);
         awaitLatchOrFail(5);
 
         // Assert
@@ -143,7 +142,7 @@ class ConsumerPositiveIT extends AbstractKafkaIT {
         stubPaymentApiSensitiveResponses();
 
         // Act
-        sendMessageToKafka(MAIN_TOPIC, message);
+        sendMessageToKafka(message);
         awaitLatchOrFail(100);
 
         // Assert
@@ -167,7 +166,7 @@ class ConsumerPositiveIT extends AbstractKafkaIT {
         stubRefundPaymentApiResponses();
 
         // Act
-        sendMessageToKafka(MAIN_TOPIC, message);
+        sendMessageToKafka(message);
         awaitLatchOrFail(5);
 
         // Assert
@@ -234,8 +233,8 @@ class ConsumerPositiveIT extends AbstractKafkaIT {
                         .withBody(TestUtils.getLatestRefund())));
     }
 
-    private void sendMessageToKafka(String topic, byte[] message) {
-        testProducer.send(new ProducerRecord<>(topic, 0, System.currentTimeMillis(), "key", message));
+    private void sendMessageToKafka(byte[] message) {
+        testProducer.send(new ProducerRecord<>(KafkaUtils.MAIN_TOPIC, 0, System.currentTimeMillis(), "key", message));
     }
 
     private void awaitLatchOrFail(int seconds) throws InterruptedException {

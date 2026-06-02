@@ -71,7 +71,7 @@ class StandardTransactionHandlerTest {
         when(paymentDetails.getPaymentStatus()).thenReturn(paymentStatus);
 
         List<EshuDao> eshuList = Arrays.asList(eshuDao1, eshuDao2);
-        List<PaymentTransactionsResourceDao> daoList = Arrays.asList(paymentTransactionsResourceDao);
+        List<PaymentTransactionsResourceDao> daoList = List.of(paymentTransactionsResourceDao);
 
         when(eshuMapper.mapFromPaymentResponse(paymentResponse, paymentId, transactionDate)).thenReturn(eshuList);
         when(paymentTransactionsResourceDaoMapper.mapFromPaymentResponse(paymentResponse, paymentId, transactionDate,

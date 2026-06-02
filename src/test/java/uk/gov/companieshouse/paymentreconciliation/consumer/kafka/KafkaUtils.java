@@ -22,10 +22,4 @@ public final class KafkaUtils {
         }
         return count;
     }
-
-    static Duration kafkaPollingDuration() {
-        String kafkaPollingDuration = System.getenv().containsKey("KAFKA_POLLING_DURATION") ?
-                System.getenv("KAFKA_POLLING_DURATION") : "1000";
-        return Duration.ofMillis(Long.parseLong(kafkaPollingDuration));
-    }
 }

@@ -145,24 +145,21 @@ class PaymentsApiClientTest {
 
     @Test
     void getLatestRefundStatus_returnsRefund_onSuccess() throws Exception {
-        String paymentId = PAYMENT_ID_REFUND;
-        String refundId = REFUND_ID;
         RefundModel refund = new RefundModel();
-        refund.setRefundId(refundId);
+        refund.setRefundId(REFUND_ID);
 
         when(privatePaymentResourceHandler.patchLatestRefundStatus("/payments/789/refunds/r1", refund))
                 .thenReturn(paymentPatchRefundStatus);
         when(paymentPatchRefundStatus.execute()).thenReturn(apiRefundResponse);
         when(apiRefundResponse.getData()).thenReturn(refund);
 
-        RefundModel result = paymentsApiClient.patchLatestRefundStatus(paymentId, refund);
+        RefundModel result = paymentsApiClient.patchLatestRefundStatus(PAYMENT_ID_REFUND, refund);
 
         assertSame(refund, result);
     }
 
     @Test
     void getLatestRefundStatus_handlesApiErrorResponseException() throws Exception {
-        String paymentId = PAYMENT_ID_REFUND;
         RefundModel refund =  new RefundModel();
         refund.setRefundId("r1");
 
@@ -170,21 +167,20 @@ class PaymentsApiClientTest {
                 .thenReturn(paymentPatchRefundStatus);
         when(paymentPatchRefundStatus.execute()).thenThrow(ApiErrorResponseException.fromHttpResponseException(new Builder(400, "Bad Request", new HttpHeaders() ).build()));
 
-        RefundModel result = paymentsApiClient.patchLatestRefundStatus(paymentId, refund);
+        RefundModel result = paymentsApiClient.patchLatestRefundStatus(PAYMENT_ID_REFUND, refund);
         assertNull(result);
         verify(responseHandler).handle(any(String.class), any(String.class), any(ApiErrorResponseException.class));
     }
 
     @Test
     void getLatestRefundStatus_handlesURIValidationException() throws Exception {
-        String paymentId = PAYMENT_ID_REFUND;
         RefundModel refund =  new RefundModel();
         refund.setRefundId("r1");
 
         when(privatePaymentResourceHandler.patchLatestRefundStatus("/payments/789/refunds/r1", refund))
                 .thenReturn(paymentPatchRefundStatus);
         when(paymentPatchRefundStatus.execute()).thenThrow(new URIValidationException("invalid uri"));
-        RefundModel result = paymentsApiClient.patchLatestRefundStatus(paymentId, refund);
+        RefundModel result = paymentsApiClient.patchLatestRefundStatus(PAYMENT_ID_REFUND, refund);
 
         assertNull(result);
         verify(responseHandler).handle(any(URIValidationException.class));

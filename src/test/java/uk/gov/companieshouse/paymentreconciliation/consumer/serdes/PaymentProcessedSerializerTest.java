@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.paymentreconciliation.consumer.serdes;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -58,7 +59,7 @@ class PaymentProcessedSerializerTest {
                 () -> spySerializer.serialize("test-topic", data)
         );
         assertTrue(ex.getMessage().contains("Error serialising refund request"));
-        assertTrue(ex.getCause() instanceof IOException);
+        assertInstanceOf(IOException.class, ex.getCause());
     }
 
     @Test

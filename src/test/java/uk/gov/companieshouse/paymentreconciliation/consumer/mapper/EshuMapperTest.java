@@ -76,7 +76,7 @@ class EshuMapperTest {
         List<EshuDao> result = eshuMapper.mapFromPaymentResponse(paymentResponse, paymentId, transactionDate);
 
         assertEquals(1, result.size());
-        assertEshuDao(result.get(0), paymentId, 100, "12345678", transactionDate);
+        assertEshuDao(result.getFirst(), paymentId, 100, "12345678", transactionDate);
     }
 
 
@@ -96,7 +96,7 @@ class EshuMapperTest {
         List<EshuDao> result = eshuMapper.mapFromPaymentResponse(paymentResponse, paymentId, transactionDate);
 
         assertEquals(1, result.size());
-        assertEshuDao(result.get(0), paymentId, 100, "", transactionDate);
+        assertEshuDao(result.getFirst(), paymentId, 100, "", transactionDate);
     }
 
 
