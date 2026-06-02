@@ -18,6 +18,7 @@ import uk.gov.companieshouse.paymentreconciliation.consumer.repository.RefundRep
 
 @Component
 public class RefundTransactionHandler {
+
     private final PaymentsApiClient paymentRefundApiClient;
     private final RefundRepository refundRepository;
     private final RefundDaoMapper refundDaoMapper;
@@ -29,7 +30,8 @@ public class RefundTransactionHandler {
     private static final String STATUS_REFUND_SUCCESS = "refund-success";
     private static final String STATUS_FAILED = "failed";
 
-    public RefundTransactionHandler(PaymentsApiClient paymentRefundApiClient, RefundRepository refundRepository, RefundDaoMapper refundDaoMapper) {
+    public RefundTransactionHandler(PaymentsApiClient paymentRefundApiClient, RefundRepository refundRepository,
+            RefundDaoMapper refundDaoMapper) {
         this.paymentRefundApiClient = paymentRefundApiClient;
         this.refundRepository = refundRepository;
         this.refundDaoMapper = refundDaoMapper;
@@ -40,21 +42,26 @@ public class RefundTransactionHandler {
         RefundModel refund = getRefund(paymentSession, paymentProcessed);
         if (refund != null) {
             if (refund.getStatus().equals(STATUS_SUBMITTED) || refund.getStatus().equals(STATUS_REFUND_REQUESTED)) {
-                LOGGER.info("Refund status is submitted. Fetching latest refund status: %s".formatted(refund), DataMapHolder.getLogMap());
-                refund = paymentRefundApiClient.patchLatestRefundStatus(paymentProcessed.getPaymentResourceId(), refund);
+                LOGGER.info("Refund status is submitted. Fetching latest refund status: %s".formatted(refund),
+                        DataMapHolder.getLogMap());
+                refund = paymentRefundApiClient.patchLatestRefundStatus(paymentProcessed.getPaymentResourceId(),
+                        refund);
             }
             if (refund != null) {
                 if (refund.getStatus().equals(STATUS_SUCCESS) || refund.getStatus().equals(STATUS_REFUND_SUCCESS)) {
                     LOGGER.info("Refund successful. Reconciling", DataMapHolder.getLogMap());
                     reconcileRefund(paymentProcessed.getPaymentResourceId(), paymentSession, refund);
                 } else if (refund.getStatus().equals(STATUS_FAILED)) {
-                    LOGGER.info("Refund failed. Skipping reconciliation: %s".formatted(refund), DataMapHolder.getLogMap());
+                    LOGGER.info("Refund failed. Skipping reconciliation: %s".formatted(refund),
+                            DataMapHolder.getLogMap());
                 } else {
-                    LOGGER.info("Refund status is still submitted, retrying: %s".formatted(refund), DataMapHolder.getLogMap());
+                    LOGGER.info("Refund status is still submitted, retrying: %s".formatted(refund),
+                            DataMapHolder.getLogMap());
                     throw new RetryableException("Refund status is still submitted");
                 }
             } else {
-                LOGGER.info("Refund is null after attempting to fetch latest status. Skipping further processing.", DataMapHolder.getLogMap());
+                LOGGER.info("Refund is null after attempting to fetch latest status. Skipping further processing.",
+                        DataMapHolder.getLogMap());
             }
         } else {
             LOGGER.info("No matching refund found for payment refunds", DataMapHolder.getLogMap());

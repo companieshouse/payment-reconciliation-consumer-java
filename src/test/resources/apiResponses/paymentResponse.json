@@ -23,12 +23,18 @@
   "costs": [
     {
       "amount": "16.00",
-      "available_payment_methods": ["GovPay"],
-      "class_of_payment": ["data-maintenance"],
+      "available_payment_methods": [
+        "GovPay"
+      ],
+      "class_of_payment": [
+        "data-maintenance"
+      ],
       "description": "Register Overseas Entity fee",
       "description_identifier": "description-identifier",
       "product_type": "register-overseas-entity",
-      "description_values": { "Key": "Value" }
+      "description_values": {
+        "Key": "Value"
+      }
     }
   ],
   "etag": "8c2536a14aa094ea8acd1043fd11d6ecd16d6871d6bfc90e7244e3e8",

@@ -69,10 +69,12 @@ class ConsumerRetryableExceptionIT extends AbstractKafkaIT {
         DatumWriter<payment_processed> writer = new ReflectDatumWriter<>(payment_processed.class);
         writer.write(TestUtils.getPaymentProcessed(), encoder);
 
-        doThrow(new RetryableException("Retryable exception", new Throwable())).when(paymentReconciliationServiceRouter).route(any());
+        doThrow(new RetryableException("Retryable exception", new Throwable())).when(paymentReconciliationServiceRouter)
+                .route(any());
 
         // when
-        testProducer.send(new ProducerRecord<>(MAIN_TOPIC, 0, System.currentTimeMillis(), "key", outputStream.toByteArray()));
+        testProducer.send(
+                new ProducerRecord<>(MAIN_TOPIC, 0, System.currentTimeMillis(), "key", outputStream.toByteArray()));
         if (!testConsumerAspect.getLatch().await(20L, TimeUnit.SECONDS)) {
             fail("Timed out waiting for latch");
         }

@@ -34,7 +34,8 @@ class PaymentTransactionsResourceDaoMapperTest {
     private CreatedBy createdBy;
 
 
-    private void setupPaymentResponseMocks(String email, String paymentMethod, String companyNumber, String reference, String amount1, String amount2) {
+    private void setupPaymentResponseMocks(String email, String paymentMethod, String companyNumber, String reference,
+            String amount1, String amount2) {
         when(paymentResponse.getCosts()).thenReturn(List.of(cost1, cost2));
         when(paymentResponse.getCreatedBy()).thenReturn(createdBy);
         when(createdBy.getEmail()).thenReturn(email);
@@ -45,7 +46,9 @@ class PaymentTransactionsResourceDaoMapperTest {
         when(paymentResponse.getReference()).thenReturn(reference);
     }
 
-    private void assertPaymentTransactionsResourceDao(PaymentTransactionsResourceDao dao, String paymentId, Instant transactionDate, String email, String paymentMethod, String amount, String companyNumber, String transactionType, String orderReference, String status) {
+    private void assertPaymentTransactionsResourceDao(PaymentTransactionsResourceDao dao, String paymentId,
+            Instant transactionDate, String email, String paymentMethod, String amount, String companyNumber,
+            String transactionType, String orderReference, String status) {
         assertEquals("X" + paymentId, dao.getTransactionId());
         assertEquals(transactionDate, dao.getTransactionDate());
         assertEquals(email, dao.getEmail());
@@ -79,7 +82,8 @@ class PaymentTransactionsResourceDaoMapperTest {
                 paymentResponse, paymentId, transactionDate, paymentStatus);
 
         assertEquals(2, result.size());
-        assertPaymentTransactionsResourceDao(result.get(0), paymentId, transactionDate, email, paymentMethod, amount1, companyNumber, "Immediate bill", "REF-001", paymentStatus);
+        assertPaymentTransactionsResourceDao(result.get(0), paymentId, transactionDate, email, paymentMethod, amount1,
+                companyNumber, "Immediate bill", "REF-001", paymentStatus);
         assertEquals(amount2, result.get(1).getAmount());
     }
 
@@ -103,7 +107,8 @@ class PaymentTransactionsResourceDaoMapperTest {
                 paymentResponse, paymentId, transactionDate, paymentStatus);
 
         assertEquals(2, result.size());
-        assertPaymentTransactionsResourceDao(result.get(0), paymentId, transactionDate, email, paymentMethod, amount1, companyNumber, "Immediate bill", "REF-001", paymentStatus);
+        assertPaymentTransactionsResourceDao(result.get(0), paymentId, transactionDate, email, paymentMethod, amount1,
+                companyNumber, "Immediate bill", "REF-001", paymentStatus);
         assertEquals(amount2, result.get(1).getAmount());
     }
 

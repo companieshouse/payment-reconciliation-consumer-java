@@ -11,11 +11,15 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class EshuMapper {
+
     private final ProductCodeLoader productCodeLoader;
+
     public EshuMapper(ProductCodeLoader productCodeLoader) {
         this.productCodeLoader = productCodeLoader;
     }
-    public List<EshuDao> mapFromPaymentResponse(PaymentResponse paymentResponse, String paymentId, Instant transactionDate) {
+
+    public List<EshuDao> mapFromPaymentResponse(PaymentResponse paymentResponse, String paymentId,
+            Instant transactionDate) {
         List<EshuDao> eshuResources = new ArrayList<>();
         for (var cost : paymentResponse.getCosts()) {
             String productType = cost.getProductType();

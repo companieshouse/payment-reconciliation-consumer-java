@@ -38,25 +38,25 @@ public class InvalidMessageRouter implements ProducerInterceptor<String, Object>
             Headers headers = producerRecord.headers();
 
             String originalTopic = getRequiredHeader(headers, ORIGINAL_TOPIC)
-                                        .map(header -> new String(header.value()))
-                                        .orElse(producerRecord.topic());
+                    .map(header -> new String(header.value()))
+                    .orElse(producerRecord.topic());
 
             BigInteger partition = getRequiredHeader(headers, ORIGINAL_PARTITION)
-                                        .map(header -> new BigInteger(header.value()))
-                                        .orElse(OFFSET_UNAVAILABLE);
+                    .map(header -> new BigInteger(header.value()))
+                    .orElse(OFFSET_UNAVAILABLE);
 
             BigInteger offset = getRequiredHeader(headers, ORIGINAL_OFFSET)
-                                        .map(header -> new BigInteger(header.value()))
-                                        .orElse(OFFSET_UNAVAILABLE);
+                    .map(header -> new BigInteger(header.value()))
+                    .orElse(OFFSET_UNAVAILABLE);
 
             String exception = getRequiredHeader(headers, EXCEPTION_MESSAGE)
-                                        .map(header -> new String(header.value()))
-                                        .orElse(UNKNOWN_ERROR);
+                    .map(header -> new String(header.value()))
+                    .orElse(UNKNOWN_ERROR);
 
             LOGGER.error("""
-                    Republishing record to topic: [%s] \
-                    From: original topic: [%s], partition: [%s], offset: [%s], exception: [%s]\
-                    """.formatted(invalidTopic, originalTopic, partition, offset, exception),
+                            Republishing record to topic: [%s] \
+                            From: original topic: [%s], partition: [%s], offset: [%s], exception: [%s]\
+                            """.formatted(invalidTopic, originalTopic, partition, offset, exception),
                     DataMapHolder.getLogMap());
 
             return new ProducerRecord<>(invalidTopic, producerRecord.key(), producerRecord.value());

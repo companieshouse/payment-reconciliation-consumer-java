@@ -88,7 +88,9 @@ class ConsumerRetryableException500ErrorIT extends AbstractKafkaIT {
         while (System.currentTimeMillis() < timeout) {
             ConsumerRecords<?, ?> records = KafkaTestUtils.getRecords(testConsumer, Duration.ofMillis(200), 1);
             totalCount += KafkaUtils.noOfRecordsForTopic(records, RETRY_TOPIC);
-            if (totalCount >= 1) break;
+            if (totalCount >= 1) {
+                break;
+            }
         }
         assertThat(totalCount).isEqualTo(1);
     }

@@ -51,7 +51,8 @@ class EshuMapperTest {
         when(paymentResponse.getCompanyNumber()).thenReturn(companyNumber);
     }
 
-    private void assertEshuDao(EshuDao eshu, String paymentId, int productCode, String companyNumber, Instant transactionDate) {
+    private void assertEshuDao(EshuDao eshu, String paymentId, int productCode, String companyNumber,
+            Instant transactionDate) {
         assertEquals("X" + paymentId, eshu.getPaymentReference());
         assertEquals(productCode, eshu.getProductCode());
         assertEquals(companyNumber, eshu.getCompanyNumber());

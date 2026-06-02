@@ -51,7 +51,7 @@ class LoggingKafkaListenerAspect {
                     .partition((Integer) headers.get(RECEIVED_PARTITION))
                     .offset((Long) headers.get(OFFSET));
 
-            LOGGER.info( LOG_MESSAGE_RECEIVED, DataMapHolder.getLogMap());
+            LOGGER.info(LOG_MESSAGE_RECEIVED, DataMapHolder.getLogMap());
 
             Object result = joinPoint.proceed();
 

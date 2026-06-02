@@ -37,6 +37,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class PaymentsApiClientTest {
+
     private static final String PAYMENT_ID_SESSION = "123";
     private static final String PAYMENT_ID_DETAILS = "456";
     private static final String PAYMENT_ID_REFUND = "789";
@@ -83,7 +84,6 @@ class PaymentsApiClientTest {
 
         Optional<PaymentResponse> result = paymentsApiClient.getPaymentSession(PAYMENT_ID_SESSION);
 
-
         assertTrue(result.isPresent());
         assertSame(paymentResponse, result.get());
     }
@@ -91,12 +91,13 @@ class PaymentsApiClientTest {
     @Test
     void getPaymentSession_handlesApiErrorResponseException() throws Exception {
         when(privatePaymentResourceHandler.getPaymentSession("/payments/123")).thenReturn(paymentGetPaymentSession);
-        when(paymentGetPaymentSession.execute()).thenThrow(ApiErrorResponseException.fromHttpResponseException(new Builder(400, "Bad Request", new HttpHeaders()).build()));
+        when(paymentGetPaymentSession.execute()).thenThrow(ApiErrorResponseException.fromHttpResponseException(
+                new Builder(400, "Bad Request", new HttpHeaders()).build()));
 
         Optional<PaymentResponse> result = paymentsApiClient.getPaymentSession(PAYMENT_ID_SESSION);
 
         assertTrue(result.isEmpty());
-        verify(responseHandler).handle(any(String.class), any(String.class),any(ApiErrorResponseException.class));
+        verify(responseHandler).handle(any(String.class), any(String.class), any(ApiErrorResponseException.class));
     }
 
     @Test
@@ -114,7 +115,8 @@ class PaymentsApiClientTest {
         PaymentDetailsResponse paymentDetailsResponse = new PaymentDetailsResponse();
         var paymentDetailsGet = this.paymentGetPaymentDetails;
 
-        when(privatePaymentResourceHandler.getPaymentDetails("/private/payments/456/payment-details")).thenReturn(paymentDetailsGet);
+        when(privatePaymentResourceHandler.getPaymentDetails("/private/payments/456/payment-details")).thenReturn(
+                paymentDetailsGet);
         when(paymentDetailsGet.execute()).thenReturn(apiPaymentDetailsResponse);
         when(apiPaymentDetailsResponse.getData()).thenReturn(paymentDetailsResponse);
 
@@ -124,8 +126,10 @@ class PaymentsApiClientTest {
 
     @Test
     void getPaymentDetails_handlesApiErrorResponseException() throws Exception {
-        when(privatePaymentResourceHandler.getPaymentDetails("/private/payments/456/payment-details")).thenReturn(paymentGetPaymentDetails);
-        when(paymentGetPaymentDetails.execute()).thenThrow(ApiErrorResponseException.fromHttpResponseException(new Builder(400, "Bad Request", new HttpHeaders()).build()));
+        when(privatePaymentResourceHandler.getPaymentDetails("/private/payments/456/payment-details")).thenReturn(
+                paymentGetPaymentDetails);
+        when(paymentGetPaymentDetails.execute()).thenThrow(ApiErrorResponseException.fromHttpResponseException(
+                new Builder(400, "Bad Request", new HttpHeaders()).build()));
         PaymentDetailsResponse result = paymentsApiClient.getPaymentDetails(PAYMENT_ID_DETAILS);
 
         assertNull(result);
@@ -134,7 +138,8 @@ class PaymentsApiClientTest {
 
     @Test
     void getPaymentDetails_handlesURIValidationException() throws Exception {
-        when(privatePaymentResourceHandler.getPaymentDetails("/private/payments/456/payment-details")).thenReturn(paymentGetPaymentDetails);
+        when(privatePaymentResourceHandler.getPaymentDetails("/private/payments/456/payment-details")).thenReturn(
+                paymentGetPaymentDetails);
         when(paymentGetPaymentDetails.execute()).thenThrow(new URIValidationException("invalid uri"));
 
         PaymentDetailsResponse result = paymentsApiClient.getPaymentDetails(PAYMENT_ID_DETAILS);
@@ -160,12 +165,13 @@ class PaymentsApiClientTest {
 
     @Test
     void getLatestRefundStatus_handlesApiErrorResponseException() throws Exception {
-        RefundModel refund =  new RefundModel();
+        RefundModel refund = new RefundModel();
         refund.setRefundId("r1");
 
         when(privatePaymentResourceHandler.patchLatestRefundStatus("/payments/789/refunds/r1", refund))
                 .thenReturn(paymentPatchRefundStatus);
-        when(paymentPatchRefundStatus.execute()).thenThrow(ApiErrorResponseException.fromHttpResponseException(new Builder(400, "Bad Request", new HttpHeaders() ).build()));
+        when(paymentPatchRefundStatus.execute()).thenThrow(ApiErrorResponseException.fromHttpResponseException(
+                new Builder(400, "Bad Request", new HttpHeaders()).build()));
 
         RefundModel result = paymentsApiClient.patchLatestRefundStatus(PAYMENT_ID_REFUND, refund);
         assertNull(result);
@@ -174,7 +180,7 @@ class PaymentsApiClientTest {
 
     @Test
     void getLatestRefundStatus_handlesURIValidationException() throws Exception {
-        RefundModel refund =  new RefundModel();
+        RefundModel refund = new RefundModel();
         refund.setRefundId("r1");
 
         when(privatePaymentResourceHandler.patchLatestRefundStatus("/payments/789/refunds/r1", refund))
@@ -191,7 +197,8 @@ class PaymentsApiClientTest {
         String paymentId = "gone-id";
         when(privatePaymentResourceHandler.getPaymentSession("/payments/gone-id")).thenReturn(paymentGetPaymentSession);
         // Simulate 410 GONE error
-        ApiErrorResponseException goneException = ApiErrorResponseException.fromHttpResponseException(new Builder(410, "Gone", new HttpHeaders()).build());
+        ApiErrorResponseException goneException = ApiErrorResponseException.fromHttpResponseException(
+                new Builder(410, "Gone", new HttpHeaders()).build());
         when(paymentGetPaymentSession.execute()).thenThrow(goneException);
 
         // skipGoneResource = true, skipGoneResourceId = gone-id
@@ -204,11 +211,14 @@ class PaymentsApiClientTest {
     @Test
     void getPaymentSession_doesNotSkipGoneResource_whenIdDoesNotMatch() throws Exception {
         String paymentId = "not-matching-id";
-        when(privatePaymentResourceHandler.getPaymentSession("/payments/not-matching-id")).thenReturn(paymentGetPaymentSession);
-        ApiErrorResponseException goneException = ApiErrorResponseException.fromHttpResponseException(new Builder(410, "Gone", new HttpHeaders()).build());
+        when(privatePaymentResourceHandler.getPaymentSession("/payments/not-matching-id")).thenReturn(
+                paymentGetPaymentSession);
+        ApiErrorResponseException goneException = ApiErrorResponseException.fromHttpResponseException(
+                new Builder(410, "Gone", new HttpHeaders()).build());
         when(paymentGetPaymentSession.execute()).thenThrow(goneException);
 
-        PaymentsApiClient client = new PaymentsApiClient(internalApiClientFactory, responseHandler, "some-other-id", true);
+        PaymentsApiClient client = new PaymentsApiClient(internalApiClientFactory, responseHandler, "some-other-id",
+                true);
         var result = client.getPaymentSession(paymentId);
         // Should not skip, should call responseHandler and return Optional.empty()
         assertSame(Optional.empty().getClass(), result.getClass()); // result is Optional.empty()
@@ -217,13 +227,16 @@ class PaymentsApiClientTest {
 
     @ParameterizedTest
     @MethodSource("provideSkipGoneResourceCases")
-    void getPaymentSession_skipGoneResourceParameterized(String skipGoneResourceId, boolean skipGoneResource, boolean shouldSkip) throws Exception {
+    void getPaymentSession_skipGoneResourceParameterized(String skipGoneResourceId, boolean skipGoneResource,
+            boolean shouldSkip) throws Exception {
         String paymentId = "gone-id";
         when(privatePaymentResourceHandler.getPaymentSession("/payments/gone-id")).thenReturn(paymentGetPaymentSession);
-        ApiErrorResponseException goneException = ApiErrorResponseException.fromHttpResponseException(new Builder(410, "Gone", new HttpHeaders()).build());
+        ApiErrorResponseException goneException = ApiErrorResponseException.fromHttpResponseException(
+                new Builder(410, "Gone", new HttpHeaders()).build());
         when(paymentGetPaymentSession.execute()).thenThrow(goneException);
 
-        PaymentsApiClient client = new PaymentsApiClient(internalApiClientFactory, responseHandler, skipGoneResourceId, skipGoneResource);
+        PaymentsApiClient client = new PaymentsApiClient(internalApiClientFactory, responseHandler, skipGoneResourceId,
+                skipGoneResource);
         var result = client.getPaymentSession(paymentId);
 
         if (shouldSkip) {
@@ -236,9 +249,9 @@ class PaymentsApiClientTest {
 
     private static Stream<Arguments> provideSkipGoneResourceCases() {
         return Stream.of(
-            Arguments.of("gone-id", false, false),
-            Arguments.of("", true, false),
-            Arguments.of(null, true, false)
+                Arguments.of("gone-id", false, false),
+                Arguments.of("", true, false),
+                Arguments.of(null, true, false)
         );
     }
 }

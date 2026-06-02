@@ -36,7 +36,7 @@ public class RefundDaoMapper {
         refundDao.setOrderReference(paymentSession.getReference().replace("_", "-"));
         refundDao.setStatus(refund.getStatus());
         refundDao.setUserId("system");
-        refundDao.setOriginalReference("X"+paymentId);
+        refundDao.setOriginalReference("X" + paymentId);
         refundDao.setDisputeDetails("");
         String productType = paymentSession.getCosts().getFirst().getProductType();
         refundDao.setProductCode(productCodeLoader.getProductCodes().get(productType));

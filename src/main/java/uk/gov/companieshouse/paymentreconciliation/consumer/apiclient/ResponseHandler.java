@@ -25,10 +25,13 @@ public class ResponseHandler {
         if (HttpStatus.BAD_REQUEST.value() == statusCode || HttpStatus.CONFLICT.value() == statusCode) {
             LOGGER.error(String.format(API_ERROR_RESPONSE_MESSAGE, apiCall, resourceUri, statusCode),
                     ex, DataMapHolder.getLogMap());
-            throw new NonRetryableException(String.format(API_ERROR_RESPONSE_MESSAGE, apiCall, resourceUri, statusCode), ex);
+            throw new NonRetryableException(String.format(API_ERROR_RESPONSE_MESSAGE, apiCall, resourceUri, statusCode),
+                    ex);
         } else {
-            LOGGER.error(String.format(API_ERROR_RESPONSE_MESSAGE, apiCall, resourceUri, ex.getStatusCode()),ex, DataMapHolder.getLogMap());
-            throw new RetryableException(String.format(API_ERROR_RESPONSE_MESSAGE, apiCall, resourceUri, statusCode), ex);
+            LOGGER.error(String.format(API_ERROR_RESPONSE_MESSAGE, apiCall, resourceUri, ex.getStatusCode()), ex,
+                    DataMapHolder.getLogMap());
+            throw new RetryableException(String.format(API_ERROR_RESPONSE_MESSAGE, apiCall, resourceUri, statusCode),
+                    ex);
         }
     }
 

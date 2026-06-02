@@ -30,7 +30,7 @@ public class ProductCodeLoader {
     public void init() {
         Yaml yaml = new Yaml();
         try (InputStream inputStream = resource.getInputStream()) {
-            Map<String,Object> yamlData = yaml.load(inputStream);
+            Map<String, Object> yamlData = yaml.load(inputStream);
             this.productCodes = (Map<String, Integer>) yamlData.get("product_code");
         } catch (IOException e) {
             LOGGER.error("Failed to load product codes", e);

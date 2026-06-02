@@ -53,7 +53,8 @@ class PaymentReconciliationServiceRouterTest {
 
     @BeforeEach
     void setUp() {
-        router = new PaymentReconciliationServiceRouter(paymentsApiClient, productCodeLoader, standardTransactionHandler, refundTransactionHandler);
+        router = new PaymentReconciliationServiceRouter(paymentsApiClient, productCodeLoader,
+                standardTransactionHandler, refundTransactionHandler);
     }
 
     private Optional<PaymentResponse> buildPaymentResponse(String classOfPayment, String productType) {
