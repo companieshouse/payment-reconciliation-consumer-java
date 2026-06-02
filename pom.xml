@@ -39,6 +39,7 @@
     <!--Test-->
     <test-containers.version>1.21.4</test-containers.version>
     <wiremock.version>3.13.2</wiremock.version>
+    <sonar.exclusions>**/model/**</sonar.exclusions>
     <!--Plugin Properties-->
     <jacoco-maven-plugin.version>0.8.14</jacoco-maven-plugin.version>
     <jib-maven-plugin.version>3.5.1</jib-maven-plugin.version>
