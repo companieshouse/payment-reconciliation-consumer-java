@@ -6,7 +6,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.patch;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
-import static uk.gov.companieshouse.paymentreconciliation.consumer.kafka.KafkaUtils.MAIN_TOPIC;
 import static uk.gov.companieshouse.paymentreconciliation.consumer.utils.TestUtils.GET_URI;
 import static uk.gov.companieshouse.paymentreconciliation.consumer.utils.TestUtils.getPaymentProcessed;
 
@@ -50,7 +49,7 @@ import uk.gov.companieshouse.paymentreconciliation.consumer.repository.RefundRep
 import uk.gov.companieshouse.paymentreconciliation.consumer.repository.TransactionRepository;
 import uk.gov.companieshouse.paymentreconciliation.consumer.utils.TestUtils;
 
-@SpringBootTest(properties = { "payments.api-url=http://localhost:8889" })
+@SpringBootTest(properties = {"payments.api-url=http://localhost:8889"})
 @WireMockTest(httpPort = 8889)
 class ConsumerPositiveIT extends AbstractKafkaIT {
 
@@ -119,14 +118,15 @@ class ConsumerPositiveIT extends AbstractKafkaIT {
         stubPaymentApiResponses();
 
         // Act
-        sendMessageToKafka(MAIN_TOPIC, message);
+        sendMessageToKafka(message);
         awaitLatchOrFail(5);
 
         // Assert
         PaymentTransactionsResourceDao transactionDocumentFromMongo = transactionRepository.findAll().getFirst();
         EshuDao eshuDocumentFromMongo = eshuRepository.findAll().getFirst();
 
-        String transactionDocumentJson = IOUtils.resourceToString("/mongoDb/payment_transaction.json",StandardCharsets.UTF_8);
+        String transactionDocumentJson = IOUtils.resourceToString("/mongoDb/payment_transaction.json",
+                StandardCharsets.UTF_8);
         String eshuDocumentJson = IOUtils.resourceToString("/mongoDb/eshu.json", StandardCharsets.UTF_8);
         EshuDao expectedEshu = objectMapper.readValue(eshuDocumentJson, EshuDao.class);
         PaymentTransactionsResourceDao expectedTransaction = objectMapper.readValue(transactionDocumentJson,
@@ -143,17 +143,19 @@ class ConsumerPositiveIT extends AbstractKafkaIT {
         stubPaymentApiSensitiveResponses();
 
         // Act
-        sendMessageToKafka(MAIN_TOPIC, message);
+        sendMessageToKafka(message);
         awaitLatchOrFail(100);
 
         // Assert
         PaymentTransactionsResourceDao transactionDocumentFromMongo = transactionRepository.findAll().getFirst();
         EshuDao eshuDocumentFromMongo = eshuRepository.findAll().getFirst();
 
-        String transactionDocumentJson = IOUtils.resourceToString("/mongoDb/payment_transaction-sensitive_data.json",StandardCharsets.UTF_8);
+        String transactionDocumentJson = IOUtils.resourceToString("/mongoDb/payment_transaction-sensitive_data.json",
+                StandardCharsets.UTF_8);
         String eshuDocumentJson = IOUtils.resourceToString("/mongoDb/eshu-sensitive_data.json", StandardCharsets.UTF_8);
         EshuDao expectedEshu = objectMapper.readValue(eshuDocumentJson, EshuDao.class);
-        PaymentTransactionsResourceDao expectedTransaction = objectMapper.readValue(transactionDocumentJson,PaymentTransactionsResourceDao.class);
+        PaymentTransactionsResourceDao expectedTransaction = objectMapper.readValue(transactionDocumentJson,
+                PaymentTransactionsResourceDao.class);
 
         assertThat(transactionDocumentFromMongo).usingRecursiveComparison().isEqualTo(expectedTransaction);
         assertThat(eshuDocumentFromMongo).usingRecursiveComparison().isEqualTo(expectedEshu);
@@ -167,7 +169,7 @@ class ConsumerPositiveIT extends AbstractKafkaIT {
         stubRefundPaymentApiResponses();
 
         // Act
-        sendMessageToKafka(MAIN_TOPIC, message);
+        sendMessageToKafka(message);
         awaitLatchOrFail(5);
 
         // Assert
@@ -208,7 +210,7 @@ class ConsumerPositiveIT extends AbstractKafkaIT {
                         .withBody(TestUtils.getPaymentDetailsResponse())));
     }
 
-     private void stubPaymentApiSensitiveResponses() throws IOException {
+    private void stubPaymentApiSensitiveResponses() throws IOException {
         stubFor(get(GET_URI)
                 .willReturn(aResponse()
                         .withStatus(200)
@@ -234,8 +236,8 @@ class ConsumerPositiveIT extends AbstractKafkaIT {
                         .withBody(TestUtils.getLatestRefund())));
     }
 
-    private void sendMessageToKafka(String topic, byte[] message) {
-        testProducer.send(new ProducerRecord<>(topic, 0, System.currentTimeMillis(), "key", message));
+    private void sendMessageToKafka(byte[] message) {
+        testProducer.send(new ProducerRecord<>(KafkaUtils.MAIN_TOPIC, 0, System.currentTimeMillis(), "key", message));
     }
 
     private void awaitLatchOrFail(int seconds) throws InterruptedException {

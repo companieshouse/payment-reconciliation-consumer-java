@@ -50,7 +50,7 @@ class ConsumerInvalidPayloadExceptionIT extends AbstractKafkaIT {
     }
 
     @BeforeEach
-    void setupTopicsAndDrain() throws Exception {
+    void setupTopicsAndDrain() {
         // Explicitly create topics before each test
         Properties props = new Properties();
         props.put("bootstrap.servers", kafka.getBootstrapServers());
@@ -59,7 +59,7 @@ class ConsumerInvalidPayloadExceptionIT extends AbstractKafkaIT {
             adminClient.createTopics(Collections.singletonList(new NewTopic(RETRY_TOPIC, 1, (short) 1))).all().get();
             adminClient.createTopics(Collections.singletonList(new NewTopic(ERROR_TOPIC, 1, (short) 1))).all().get();
             adminClient.createTopics(Collections.singletonList(new NewTopic(INVALID_TOPIC, 1, (short) 1))).all().get();
-        } catch( Exception e) {
+        } catch (Exception e) {
             // Topics probably already exist, ignore
         }
         testConsumer.poll(Duration.ofMillis(1000));

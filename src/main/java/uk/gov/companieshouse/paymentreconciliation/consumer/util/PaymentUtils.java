@@ -7,7 +7,8 @@ public class PaymentUtils {
 
     private static final int PROTECT_DETAILS = 16800;
 
-    private PaymentUtils() {}
+    private PaymentUtils() {
+    }
 
     public static void maskSensitiveFields(PaymentResponse paymentSession, ProductCodeLoader productCodeLoader) {
         String productType = paymentSession.getCosts().getFirst().getProductType();

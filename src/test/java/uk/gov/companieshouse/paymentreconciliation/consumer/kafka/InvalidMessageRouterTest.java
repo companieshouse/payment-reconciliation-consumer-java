@@ -31,7 +31,6 @@ class InvalidMessageRouterTest {
     private final String value = "test-value";
     private final BigInteger partition = BigInteger.valueOf(2);
     private final BigInteger offset = BigInteger.valueOf(42);
-    private final String exceptionMessage = "some error";
 
     @BeforeEach
     void setUp() {
@@ -59,6 +58,7 @@ class InvalidMessageRouterTest {
         headers.add("kafka_originalTopic", originalTopic.getBytes(StandardCharsets.UTF_8));
         headers.add("kafka_originalPartition", partition.toByteArray());
         headers.add("kafka_originalOffset", offset.toByteArray());
+        String exceptionMessage = "some error";
         headers.add("kafka_exceptionMessage", exceptionMessage.getBytes(StandardCharsets.UTF_8));
         ProducerRecord<String, Object> productRecord = new ProducerRecord<>(originalTopic, null, key, value, headers);
 

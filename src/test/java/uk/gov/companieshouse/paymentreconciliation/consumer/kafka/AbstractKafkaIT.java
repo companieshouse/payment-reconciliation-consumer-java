@@ -14,7 +14,7 @@ public abstract class AbstractKafkaIT {
 
     @Container
     protected static final ConfluentKafkaContainer kafka = new ConfluentKafkaContainer(DockerImageName.parse(
-            "confluentinc/cp-kafka:latest"));
+            "confluentinc/cp-kafka:7.6.1"));
 
     @DynamicPropertySource
     static void props(DynamicPropertyRegistry registry) {

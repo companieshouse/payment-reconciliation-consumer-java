@@ -10,7 +10,9 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class PaymentTransactionsResourceDaoMapper {
-    public List<PaymentTransactionsResourceDao> mapFromPaymentResponse(PaymentResponse paymentResponse, String paymentId, Instant transactionDate, String paymentStatus) {
+
+    public List<PaymentTransactionsResourceDao> mapFromPaymentResponse(PaymentResponse paymentResponse,
+            String paymentId, Instant transactionDate, String paymentStatus) {
         List<PaymentTransactionsResourceDao> paymentTransactionsResources = new ArrayList<>();
         for (var cost : paymentResponse.getCosts()) {
             PaymentTransactionsResourceDao transaction = new PaymentTransactionsResourceDao();

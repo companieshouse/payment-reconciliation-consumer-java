@@ -20,6 +20,7 @@ import uk.gov.companieshouse.paymentreconciliation.consumer.repository.Transacti
 
 @Component
 public class StandardTransactionHandler {
+
     private final EshuRepository eshuRepository;
     private final TransactionRepository transactionRepository;
     private final EshuMapper eshuMapper;
@@ -27,7 +28,7 @@ public class StandardTransactionHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(NAMESPACE);
 
     public StandardTransactionHandler(EshuRepository eshuRepository, TransactionRepository transactionRepository,
-                                     EshuMapper eshuMapper, PaymentTransactionsResourceDaoMapper paymentTransactionsResourceDaoMapper) {
+            EshuMapper eshuMapper, PaymentTransactionsResourceDaoMapper paymentTransactionsResourceDaoMapper) {
         this.eshuRepository = eshuRepository;
         this.transactionRepository = transactionRepository;
         this.eshuMapper = eshuMapper;

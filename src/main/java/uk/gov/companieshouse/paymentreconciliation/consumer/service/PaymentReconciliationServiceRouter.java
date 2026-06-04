@@ -49,12 +49,13 @@ public class PaymentReconciliationServiceRouter {
         if (isReconcilable(paymentSession)) {
             LOGGER.info("Reconciling payment processed message", DataMapHolder.getLogMap());
             PaymentDetailsResponse paymentDetails = paymentRefundApiClient
-                .getPaymentDetails(paymentReconciliation.getPaymentResourceId());
+                    .getPaymentDetails(paymentReconciliation.getPaymentResourceId());
 
             if (paymentDetails == null) {
                 LOGGER.info("Payment details not found", DataMapHolder.getLogMap());
                 throw new RetryableErrorException(
-                        "Payment details not found for PaymentResourceId: " + paymentReconciliation.getPaymentResourceId());
+                        "Payment details not found for PaymentResourceId: "
+                                + paymentReconciliation.getPaymentResourceId());
             }
             PaymentUtils.maskSensitiveFields(paymentSession, productCodeLoader);
             if (isRefundTransaction(paymentReconciliation)) {
@@ -63,7 +64,8 @@ public class PaymentReconciliationServiceRouter {
             } else if (paymentDetails.getPaymentStatus() != null
                     && paymentDetails.getPaymentStatus().equals("accepted")) {
                 LOGGER.info("Handling standard transaction", DataMapHolder.getLogMap());
-                standardTransactionHandler.handle(paymentDetails, paymentSession, paymentReconciliation.getPaymentResourceId());
+                standardTransactionHandler.handle(paymentDetails, paymentSession,
+                        paymentReconciliation.getPaymentResourceId());
             } else {
                 LOGGER.info("Payment processed message has unhandled status", DataMapHolder.getLogMap());
             }

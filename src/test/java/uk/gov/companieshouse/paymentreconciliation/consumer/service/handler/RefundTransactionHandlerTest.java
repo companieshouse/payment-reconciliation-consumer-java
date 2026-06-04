@@ -105,7 +105,6 @@ class RefundTransactionHandlerTest {
             }
         });
 
-
         when(paymentsApiClient.patchLatestRefundStatus(anyString(), any(RefundModel.class))).thenReturn(refundMock);
 
         when(refundDaoMapper.mapFromRefund(anyString(), eq(paymentSession), eq(refundMock))).thenReturn(refundDao);
@@ -240,7 +239,8 @@ class RefundTransactionHandlerTest {
         when(paymentSession.getRefunds()).thenReturn(List.of(refundMock));
         when(refundMock.getRefundId()).thenReturn("refund123");
         when(refundMock.getStatus()).thenReturn("submitted");
-        when(paymentsApiClient.patchLatestRefundStatus(anyString(), any(RefundModel.class))).thenThrow(new RuntimeException("fail"));
+        when(paymentsApiClient.patchLatestRefundStatus(anyString(), any(RefundModel.class))).thenThrow(
+                new RuntimeException("fail"));
         assertThrows(RuntimeException.class, () -> handler.handle(paymentSession, paymentProcessed));
     }
 
@@ -251,7 +251,8 @@ class RefundTransactionHandlerTest {
         when(paymentSession.getRefunds()).thenReturn(List.of(refundMock));
         when(refundMock.getRefundId()).thenReturn("refund123");
         when(refundMock.getStatus()).thenReturn("success");
-        when(refundDaoMapper.mapFromRefund(anyString(), eq(paymentSession), eq(refundMock))).thenThrow(new RuntimeException("fail"));
+        when(refundDaoMapper.mapFromRefund(anyString(), eq(paymentSession), eq(refundMock))).thenThrow(
+                new RuntimeException("fail"));
         assertThrows(RuntimeException.class, () -> handler.handle(paymentSession, paymentProcessed));
     }
 

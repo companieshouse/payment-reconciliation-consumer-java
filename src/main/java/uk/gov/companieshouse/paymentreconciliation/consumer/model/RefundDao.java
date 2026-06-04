@@ -23,7 +23,7 @@ public class RefundDao {
     @Field("amount")
     String amount;
 
-    @Field  ("company_number")
+    @Field("company_number")
     String companyNumber;
 
     @Field("transaction_type")

@@ -24,12 +24,9 @@ class ResponseHandlerTest {
 
     @Mock
     private ApiErrorResponseException apiErrorResponseException;
+
     @Mock
     private URIValidationException uriValidationException;
-    @Mock
-    private IllegalArgumentException illegalArgumentException;
-    @Mock
-    private Throwable throwable;
 
     @ParameterizedTest
     @CsvSource({
@@ -64,7 +61,7 @@ class ResponseHandlerTest {
         when(apiErrorResponseException.getStatusCode()).thenReturn(httpStatusCode);
 
         // when
-        Executable executable = () -> responseHandler.handle("/blah/","123456",apiErrorResponseException);
+        Executable executable = () -> responseHandler.handle("/blah/", "123456", apiErrorResponseException);
 
         // then
         assertThrows(NonRetryableException.class, executable);

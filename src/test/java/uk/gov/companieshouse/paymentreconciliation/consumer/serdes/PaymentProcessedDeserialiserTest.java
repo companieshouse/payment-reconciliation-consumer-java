@@ -35,12 +35,12 @@ class PaymentProcessedDeserialiserTest {
         DatumWriter<payment_processed> writer = new ReflectDatumWriter<>(payment_processed.class);
         writer.write(paymentProcessed, encoder);
         try (PaymentProcessedDeserialiser deserialiser = new PaymentProcessedDeserialiser()) {
-      // when
-      payment_processed actual = deserialiser.deserialize("topic", outputStream.toByteArray());
+            // when
+            payment_processed actual = deserialiser.deserialize("topic", outputStream.toByteArray());
 
-      // then
-      assertThat(actual, is(equalTo(paymentProcessed)));
-    }
+            // then
+            assertThat(actual, is(equalTo(paymentProcessed)));
+        }
     }
 
     @Test

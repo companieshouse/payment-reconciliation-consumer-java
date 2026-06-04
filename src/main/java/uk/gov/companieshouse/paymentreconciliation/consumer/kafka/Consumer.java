@@ -30,7 +30,8 @@ public class Consumer {
     private static final Logger LOGGER = LoggerFactory.getLogger(NAMESPACE);
     private final int maxAttempts;
 
-    public Consumer(PaymentReconciliationServiceRouter router, MessageFlags messageFlags, @Value("${consumer.max-attempts}") int maxAttempts) {
+    public Consumer(PaymentReconciliationServiceRouter router, MessageFlags messageFlags,
+            @Value("${consumer.max-attempts}") int maxAttempts) {
         this.maxAttempts = maxAttempts;
         this.router = router;
         this.messageFlags = messageFlags;
@@ -48,9 +49,8 @@ public class Consumer {
             messageFlags.setRetryable(true);
             logIfMaxAttemptsReached(message, ex);
             throw ex;
-        }
-        finally {
-               DataMapHolder.clear();
+        } finally {
+            DataMapHolder.clear();
         }
     }
 
