@@ -18,64 +18,60 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <!--Companies House-->
-        <api-sdk-java-version>6.6.23</api-sdk-java-version>
-        <ch-core-bom.version>0.1.4</ch-core-bom.version>
-        <ch-dependency-bom.version>0.1.4</ch-dependency-bom.version>
-        <ch-test-bom.version>0.1.4</ch-test-bom.version>
-        <private-api-sdk-java.version>6.0.21</private-api-sdk-java.version>
+        <api-sdk-java-version>7.0.6</api-sdk-java-version>
+        <ch-core-bom.version>0.1.11</ch-core-bom.version>
+        <ch-dependency-bom.version>0.1.11</ch-dependency-bom.version>
+        <ch-test-bom.version>0.1.11</ch-test-bom.version>
+        <private-api-sdk-java.version>7.0.6</private-api-sdk-java.version>
         <!--External-->
         <aspectjweaver-version>1.9.25.1</aspectjweaver-version>
         <avro-version>1.12.1</avro-version>
-        <jackson-annotations-version>2.21</jackson-annotations-version>
-        <jackson-databind-version>2.21.4</jackson-databind-version>
-        <jackson-datatype-jsr310-version>2.21.4</jackson-datatype-jsr310-version>
+        <jackson-annotations-version>2.22</jackson-annotations-version>
+        <jackson-databind-version>2.22.0</jackson-databind-version>
+        <jackson-datatype-jsr310-version> 2.22.0</jackson-datatype-jsr310-version>
         <javax-annotation-api-version>1.3.2</javax-annotation-api-version>
-        <junit-jupiter-api.version>6.0.3</junit-jupiter-api.version>
-        <junit-jupiter-engine.version>6.0.3</junit-jupiter-engine.version>
         <kafka-clients.version>4.2.1</kafka-clients.version>
-        <tomcat-embed-core.version>11.0.22</tomcat-embed-core.version>
-        <tomcat-embed-websocket.version>11.0.22</tomcat-embed-websocket.version>
+        <spring.boot.version>4.1.0</spring.boot.version>
         <!--Test-->
         <test-containers.version>1.21.4</test-containers.version>
         <wiremock.version>3.13.2</wiremock.version>
-        <sonar.exclusions>**/model/**</sonar.exclusions>
         <!--Plugin-->
-        <jacoco-maven-plugin.version>0.8.14</jacoco-maven-plugin.version>
+        <jacoco-maven-plugin.version>0.8.15</jacoco-maven-plugin.version>
         <jib-maven-plugin.version>3.5.1</jib-maven-plugin.version>
         <maven-dependency-plugin.version>3.10.0</maven-dependency-plugin.version>
         <maven-failsafe-plugin.version>3.5.6</maven-failsafe-plugin.version>
         <maven-surefire-plugin.version>3.5.6</maven-surefire-plugin.version>
-        <spring.boot.version>4.0.6</spring.boot.version>
     </properties>
     <dependencyManagement>
         <dependencies>
-            <dependency>
-                <groupId>uk.gov.companieshouse</groupId>
-                <artifactId>ch-dependency-bom</artifactId>
-                <version>${ch-dependency-bom.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
+            <!--Companies House-->
             <dependency>
                 <groupId>uk.gov.companieshouse</groupId>
                 <artifactId>ch-core-bom</artifactId>
                 <version>${ch-core-bom.version}</version>
-                <type>pom</type>
                 <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>uk.gov.companieshouse</groupId>
+                <artifactId>ch-dependency-bom</artifactId>
+                <version>${ch-dependency-bom.version}</version>
+                <scope>import</scope>
+                <type>pom</type>
             </dependency>
             <dependency>
                 <groupId>uk.gov.companieshouse</groupId>
                 <artifactId>ch-test-bom</artifactId>
                 <version>${ch-test-bom.version}</version>
-                <type>pom</type>
                 <scope>import</scope>
+                <type>pom</type>
             </dependency>
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
                 <version>${spring.boot.version}</version>
-                <type>pom</type>
                 <scope>import</scope>
+                <type>pom</type>
             </dependency>
             <!-- required due to a conflict in version between the spring-boot-dependencies-bom and ch-test-bom-->
             <dependency>
@@ -88,18 +84,6 @@
                 <groupId>org.junit.jupiter</groupId>
                 <artifactId>junit-jupiter-api</artifactId>
                 <version>6.0.3</version>
-            </dependency>
-            <!--CVE-2026-41284, CVE-2026-42498, CVE-2026-43514-->
-            <dependency>
-                <groupId>org.apache.tomcat.embed</groupId>
-                <artifactId>tomcat-embed-core</artifactId>
-                <version>11.0.22</version>
-            </dependency>
-            <!--CVE-2026-41284-->
-            <dependency>
-                <groupId>org.apache.tomcat.embed</groupId>
-                <artifactId>tomcat-embed-websocket</artifactId>
-                <version>11.0.22</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
