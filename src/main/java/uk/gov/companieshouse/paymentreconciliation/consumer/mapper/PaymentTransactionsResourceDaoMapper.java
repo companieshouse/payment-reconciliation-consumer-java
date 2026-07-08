@@ -1,12 +1,11 @@
 package uk.gov.companieshouse.paymentreconciliation.consumer.mapper;
 
-import uk.gov.companieshouse.api.model.payment.PaymentResponse;
-import uk.gov.companieshouse.paymentreconciliation.consumer.model.PaymentTransactionsResourceDao;
-import java.util.List;
 import java.time.Instant;
 import java.util.ArrayList;
-
+import java.util.List;
 import org.springframework.stereotype.Component;
+import uk.gov.companieshouse.api.model.payment.PaymentResponse;
+import uk.gov.companieshouse.paymentreconciliation.consumer.model.PaymentTransactionsResourceDao;
 
 @Component
 public class PaymentTransactionsResourceDaoMapper {

@@ -2,11 +2,9 @@ package uk.gov.companieshouse.paymentreconciliation.consumer.service;
 
 import static uk.gov.companieshouse.paymentreconciliation.consumer.Application.NAMESPACE;
 
-import java.util.Optional;
-
-import org.springframework.stereotype.Component;
-
 import consumer.exception.RetryableErrorException;
+import java.util.Optional;
+import org.springframework.stereotype.Component;
 import payments.payment_processed;
 import uk.gov.companieshouse.api.model.payment.PaymentResponse;
 import uk.gov.companieshouse.api.payments.PaymentDetailsResponse;
