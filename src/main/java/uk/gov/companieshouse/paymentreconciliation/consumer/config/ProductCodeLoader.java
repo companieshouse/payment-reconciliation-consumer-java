@@ -2,19 +2,17 @@ package uk.gov.companieshouse.paymentreconciliation.consumer.config;
 
 import static uk.gov.companieshouse.paymentreconciliation.consumer.Application.NAMESPACE;
 
+import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
-
-import jakarta.annotation.PostConstruct;
-import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.logging.LoggerFactory;
-import uk.gov.companieshouse.paymentreconciliation.consumer.exception.ProductCodesNotFoundException;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.yaml.snakeyaml.Yaml;
+import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.logging.LoggerFactory;
+import uk.gov.companieshouse.paymentreconciliation.consumer.exception.ProductCodesNotFoundException;
 
 @Service
 public class ProductCodeLoader {

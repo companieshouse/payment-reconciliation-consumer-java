@@ -1,19 +1,16 @@
 package uk.gov.companieshouse.paymentreconciliation.consumer.util;
 
-import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.logging.LoggerFactory;
-import uk.gov.companieshouse.paymentreconciliation.consumer.exception.NonRetryableException;
-import uk.gov.companieshouse.paymentreconciliation.consumer.logging.DataMapHolder;
-
 import static org.springframework.kafka.retrytopic.RetryTopicHeaders.DEFAULT_HEADER_ATTEMPTS;
 import static uk.gov.companieshouse.paymentreconciliation.consumer.Application.NAMESPACE;
 
 import java.nio.ByteBuffer;
 import java.util.Optional;
-
 import org.springframework.messaging.MessageHeaders;
-
 import payments.payment_processed;
+import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.logging.LoggerFactory;
+import uk.gov.companieshouse.paymentreconciliation.consumer.exception.NonRetryableException;
+import uk.gov.companieshouse.paymentreconciliation.consumer.logging.DataMapHolder;
 
 public class KafkaUtils {
 

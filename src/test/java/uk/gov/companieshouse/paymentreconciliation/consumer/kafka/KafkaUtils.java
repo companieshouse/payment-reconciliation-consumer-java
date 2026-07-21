@@ -3,8 +3,6 @@ package uk.gov.companieshouse.paymentreconciliation.consumer.kafka;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 
-import java.time.Duration;
-
 public final class KafkaUtils {
 
     static final String MAIN_TOPIC = "cidev-payment-processed";

@@ -4,13 +4,11 @@ import static uk.gov.companieshouse.paymentreconciliation.consumer.Application.N
 
 import java.time.Instant;
 import java.util.List;
-
+import org.springframework.stereotype.Component;
+import uk.gov.companieshouse.api.model.payment.PaymentResponse;
+import uk.gov.companieshouse.api.payments.PaymentDetailsResponse;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
-import org.springframework.stereotype.Component;
-
-import uk.gov.companieshouse.api.payments.PaymentDetailsResponse;
-import uk.gov.companieshouse.api.model.payment.PaymentResponse;
 import uk.gov.companieshouse.paymentreconciliation.consumer.mapper.EshuMapper;
 import uk.gov.companieshouse.paymentreconciliation.consumer.mapper.PaymentTransactionsResourceDaoMapper;
 import uk.gov.companieshouse.paymentreconciliation.consumer.model.EshuDao;
