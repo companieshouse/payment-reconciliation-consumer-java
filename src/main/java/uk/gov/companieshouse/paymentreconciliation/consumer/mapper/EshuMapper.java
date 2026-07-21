@@ -1,13 +1,12 @@
 package uk.gov.companieshouse.paymentreconciliation.consumer.mapper;
 
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.api.model.payment.PaymentResponse;
 import uk.gov.companieshouse.paymentreconciliation.consumer.config.ProductCodeLoader;
 import uk.gov.companieshouse.paymentreconciliation.consumer.model.EshuDao;
-import java.util.List;
-import java.time.Instant;
-import java.util.ArrayList;
-
-import org.springframework.stereotype.Component;
 
 @Component
 public class EshuMapper {

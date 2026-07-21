@@ -1,5 +1,13 @@
 package uk.gov.companieshouse.paymentreconciliation.consumer.kafka;
 
+import static uk.gov.companieshouse.paymentreconciliation.consumer.kafka.KafkaUtils.ERROR_TOPIC;
+import static uk.gov.companieshouse.paymentreconciliation.consumer.kafka.KafkaUtils.INVALID_TOPIC;
+import static uk.gov.companieshouse.paymentreconciliation.consumer.kafka.KafkaUtils.MAIN_TOPIC;
+import static uk.gov.companieshouse.paymentreconciliation.consumer.kafka.KafkaUtils.RETRY_TOPIC;
+
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -12,17 +20,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
-
 import uk.gov.companieshouse.paymentreconciliation.consumer.serdes.PaymentProcessedDeserialiser;
-
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-import static uk.gov.companieshouse.paymentreconciliation.consumer.kafka.KafkaUtils.ERROR_TOPIC;
-import static uk.gov.companieshouse.paymentreconciliation.consumer.kafka.KafkaUtils.INVALID_TOPIC;
-import static uk.gov.companieshouse.paymentreconciliation.consumer.kafka.KafkaUtils.MAIN_TOPIC;
-import static uk.gov.companieshouse.paymentreconciliation.consumer.kafka.KafkaUtils.RETRY_TOPIC;
 
 @TestConfiguration
 public class TestKafkaConfig {

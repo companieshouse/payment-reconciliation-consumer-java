@@ -9,12 +9,15 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static uk.gov.companieshouse.paymentreconciliation.consumer.utils.TestUtils.GET_URI;
 import static uk.gov.companieshouse.paymentreconciliation.consumer.utils.TestUtils.getPaymentProcessed;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
-
 import org.apache.avro.io.DatumWriter;
 import org.apache.avro.io.Encoder;
 import org.apache.avro.io.EncoderFactory;
@@ -34,12 +37,6 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.shaded.org.apache.commons.io.IOUtils;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.github.tomakehurst.wiremock.junit5.WireMockTest;
-
 import payments.payment_processed;
 import uk.gov.companieshouse.paymentreconciliation.consumer.model.EshuDao;
 import uk.gov.companieshouse.paymentreconciliation.consumer.model.PaymentTransactionsResourceDao;
@@ -160,7 +157,6 @@ class ConsumerPositiveIT extends AbstractKafkaIT {
         assertThat(transactionDocumentFromMongo).usingRecursiveComparison().isEqualTo(expectedTransaction);
         assertThat(eshuDocumentFromMongo).usingRecursiveComparison().isEqualTo(expectedEshu);
     }
-
 
     @Test
     void shouldConsumePaymentProcessMessageRefundTransactionSuccessfully() throws Exception {
