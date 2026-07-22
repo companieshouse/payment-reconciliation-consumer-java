@@ -13,27 +13,33 @@ public class TestUtils {
     public static final String GET_URI = "/payments/P9hl8PrKRBk1Zmc";
 
     public static String getPaymentResponse() throws IOException {
-        return IOUtils.resourceToString("/apiResponses/paymentResponse.json", StandardCharsets.UTF_8);
+        return IOUtils.resourceToString("/apiResponses/payment-session-govpay-refund-response.json",
+                StandardCharsets.UTF_8);
     }
 
     public static String getPaymentRefundResponse() throws IOException {
-        return IOUtils.resourceToString("/apiResponses/paymentRefundResponse.json", StandardCharsets.UTF_8);
+        return IOUtils.resourceToString("/apiResponses/payment-session-standard-with-1dp-completed-at-response.json",
+                StandardCharsets.UTF_8);
     }
 
     public static String getPaymentDetailsResponse() throws IOException {
-        return IOUtils.resourceToString("/apiResponses/paymentDetailsResponse.json", StandardCharsets.UTF_8);
+        return IOUtils.resourceToString("/apiResponses/payment-details-standard-response.json",
+                StandardCharsets.UTF_8);
     }
 
     public static String getPaymentSensitiveResponse() throws IOException {
-        return IOUtils.resourceToString("/apiResponses/paymentSensitiveResponse.json", StandardCharsets.UTF_8);
+        return IOUtils.resourceToString("/apiResponses/payment-session-sensitive-product-response.json",
+                StandardCharsets.UTF_8);
     }
 
     public static String getPaymentDetailsSensitiveResponse() throws IOException {
-        return IOUtils.resourceToString("/apiResponses/paymentDetailsSensitiveResponse.json", StandardCharsets.UTF_8);
+        return IOUtils.resourceToString("/apiResponses/payment-details-sensitive-response.json",
+                StandardCharsets.UTF_8);
     }
 
     public static String getLatestRefund() throws IOException {
-        return IOUtils.resourceToString("/apiResponses/refundPatchResponse.json", StandardCharsets.UTF_8);
+        return IOUtils.resourceToString("/apiResponses/refund-patch-success-response.json",
+                StandardCharsets.UTF_8);
     }
 
     @NotNull
