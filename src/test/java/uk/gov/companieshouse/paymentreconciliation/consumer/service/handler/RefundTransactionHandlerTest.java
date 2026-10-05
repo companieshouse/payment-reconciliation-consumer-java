@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -294,7 +295,7 @@ class RefundTransactionHandlerTest {
     @Test
     void handle_noMatchingRefundIdInList_doesNothing() {
         when(paymentProcessed.getRefundId()).thenReturn("refund123");
-        RefundModel otherRefund = org.mockito.Mockito.mock(RefundModel.class);
+        RefundModel otherRefund = mock(RefundModel.class);
         when(otherRefund.getRefundId()).thenReturn("other");
         when(paymentSession.getRefunds()).thenReturn(List.of(otherRefund));
         handler.handle(paymentSession, paymentProcessed);

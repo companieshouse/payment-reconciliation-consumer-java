@@ -3,8 +3,8 @@ package uk.gov.companieshouse.paymentreconciliation.consumer.utils;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.NotNull;
-import org.testcontainers.shaded.org.apache.commons.io.IOUtils;
 
 import payments.payment_processed;
 

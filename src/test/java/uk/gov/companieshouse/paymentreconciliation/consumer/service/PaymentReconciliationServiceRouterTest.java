@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.paymentreconciliation.consumer.service;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -10,7 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -185,12 +185,7 @@ class PaymentReconciliationServiceRouterTest {
         when(paymentsApiClient.getPaymentSession("PAY123")).thenReturn(paymentSession);
         when(paymentsApiClient.getPaymentDetails("PAY123")).thenReturn(null);
         when(productCodeLoader.getProductCodes()).thenReturn(productCodes);
-        try {
-            router.route(paymentReconciliation);
-            Assertions.fail("Expected RetryableErrorException");
-        } catch (Exception e) {
-            Assertions.assertThat(e).isInstanceOf(RetryableErrorException.class);
-        }
+        assertThrows(RetryableErrorException.class, () -> router.route(paymentReconciliation));
     }
 
     @Test

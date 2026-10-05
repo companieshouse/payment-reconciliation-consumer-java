@@ -12,9 +12,7 @@ import java.util.Optional;
 import org.apache.kafka.clients.producer.ProducerInterceptor;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
-import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
-
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.paymentreconciliation.consumer.logging.DataMapHolder;
@@ -33,25 +31,15 @@ public class InvalidMessageRouter implements ProducerInterceptor<String, Object>
             return producerRecord;
         } else {
 
-            BigInteger OFFSET_UNAVAILABLE = BigInteger.valueOf(-1);
-            String UNKNOWN_ERROR = "unknown";
             Headers headers = producerRecord.headers();
-
-            String originalTopic = getRequiredHeader(headers, ORIGINAL_TOPIC)
-                    .map(header -> new String(header.value()))
-                    .orElse(producerRecord.topic());
-
-            BigInteger partition = getRequiredHeader(headers, ORIGINAL_PARTITION)
-                    .map(header -> new BigInteger(header.value()))
-                    .orElse(OFFSET_UNAVAILABLE);
-
-            BigInteger offset = getRequiredHeader(headers, ORIGINAL_OFFSET)
-                    .map(header -> new BigInteger(header.value()))
-                    .orElse(OFFSET_UNAVAILABLE);
-
-            String exception = getRequiredHeader(headers, EXCEPTION_MESSAGE)
-                    .map(header -> new String(header.value()))
-                    .orElse(UNKNOWN_ERROR);
+            String originalTopic = Optional.ofNullable(headers.lastHeader(ORIGINAL_TOPIC))
+                    .map(h -> new String(h.value())).orElse(producerRecord.topic());
+            BigInteger partition = Optional.ofNullable(headers.lastHeader(ORIGINAL_PARTITION))
+                    .map(h -> new BigInteger(h.value())).orElse(BigInteger.valueOf(-1));
+            BigInteger offset = Optional.ofNullable(headers.lastHeader(ORIGINAL_OFFSET))
+                    .map(h -> new BigInteger(h.value())).orElse(BigInteger.valueOf(-1));
+            String exception = Optional.ofNullable(headers.lastHeader(EXCEPTION_MESSAGE))
+                    .map(h -> new String(h.value())).orElse("unknown");
 
             LOGGER.error("""
                             Republishing record to topic: [%s] \
@@ -61,10 +49,6 @@ public class InvalidMessageRouter implements ProducerInterceptor<String, Object>
 
             return new ProducerRecord<>(invalidTopic, producerRecord.key(), producerRecord.value());
         }
-    }
-
-    private Optional<Header> getRequiredHeader(Headers headers, String headerKey) {
-        return Optional.ofNullable(headers.lastHeader(headerKey));
     }
 
     @Override
