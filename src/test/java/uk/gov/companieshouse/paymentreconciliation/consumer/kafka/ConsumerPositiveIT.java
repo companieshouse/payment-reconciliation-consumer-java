@@ -9,9 +9,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static uk.gov.companieshouse.paymentreconciliation.consumer.utils.TestUtils.GET_URI;
 import static uk.gov.companieshouse.paymentreconciliation.consumer.utils.TestUtils.getPaymentProcessed;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -22,11 +19,11 @@ import org.apache.avro.io.DatumWriter;
 import org.apache.avro.io.Encoder;
 import org.apache.avro.io.EncoderFactory;
 import org.apache.avro.reflect.ReflectDatumWriter;
+import org.apache.commons.io.IOUtils;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,10 +31,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.shaded.org.apache.commons.io.IOUtils;
+import org.testcontainers.mongodb.MongoDBContainer;
 import payments.payment_processed;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.PropertyNamingStrategies;
+import tools.jackson.databind.json.JsonMapper;
 import uk.gov.companieshouse.paymentreconciliation.consumer.model.EshuDao;
 import uk.gov.companieshouse.paymentreconciliation.consumer.model.PaymentTransactionsResourceDao;
 import uk.gov.companieshouse.paymentreconciliation.consumer.model.RefundDao;
@@ -49,6 +48,17 @@ import uk.gov.companieshouse.paymentreconciliation.consumer.utils.TestUtils;
 @SpringBootTest(properties = {"payments.api-url=http://localhost:8889"})
 @WireMockTest(httpPort = 8889)
 class ConsumerPositiveIT extends AbstractKafkaIT {
+
+    @Container
+    private static final MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:8.2.5-noble");
+
+    private static final String ESHU_COLLECTION = "eshu";
+    private static final String TRANSACTION_COLLECTION = "payment_transaction";
+    private static final String REFUND_COLLECTION = "refunds";
+
+    private static final ObjectMapper objectMapper = JsonMapper.builder()
+            .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+            .build();
 
     @Autowired
     private KafkaConsumer<String, byte[]> testConsumer;
@@ -71,25 +81,10 @@ class ConsumerPositiveIT extends AbstractKafkaIT {
     @Autowired
     private MongoTemplate mongoTemplate;
 
-    @Container
-    private static final MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:8.2.5-noble");
-
-    private static final String ESHU_COLLECTION = "eshu";
-    private static final String TRANSACTION_COLLECTION = "payment_transaction";
-    private static final String REFUND_COLLECTION = "refunds";
-
-    private static final ObjectMapper objectMapper = new ObjectMapper();
-
     @DynamicPropertySource
     static void props(DynamicPropertyRegistry registry) {
         registry.add("steps", () -> 1);
         registry.add("spring.mongodb.uri", mongoDBContainer::getReplicaSetUrl);
-    }
-
-    @BeforeAll
-    static void setupAll() {
-        objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
-        objectMapper.registerModule(new JavaTimeModule());
     }
 
     @BeforeEach

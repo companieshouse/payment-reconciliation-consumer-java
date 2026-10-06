@@ -60,7 +60,7 @@ public class PaymentReconciliationServiceRouter {
                 LOGGER.info("Handling refund transaction", DataMapHolder.getLogMap());
                 refundTransactionHandler.handle(paymentSession, paymentReconciliation);
             } else if (paymentDetails.getPaymentStatus() != null
-                    && paymentDetails.getPaymentStatus().equals("accepted")) {
+                    && "accepted".equals(paymentDetails.getPaymentStatus())) {
                 LOGGER.info("Handling standard transaction", DataMapHolder.getLogMap());
                 standardTransactionHandler.handle(paymentDetails, paymentSession,
                         paymentReconciliation.getPaymentResourceId());
